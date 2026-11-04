@@ -19,3 +19,4 @@ services:
         sync: false
       - key: MONGODB_NAME
         value: football_manager
+

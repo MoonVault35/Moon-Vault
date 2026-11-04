@@ -1,4 +1,5 @@
 import os
+import importlib.util
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -36,23 +37,17 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-]
-
-# Enable WhiteNoise for serving static files in production if installed
-try:
-    import whitenoise  # noqa: F401
-    MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-except ImportError:
-    pass
-
-MIDDLEWARE.extend([
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-])
+]
+
+# Enable WhiteNoise for serving static files in production if available (e.g. on Render)
+if importlib.util.find_spec('whitenoise') is not None:
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 ROOT_URLCONF = 'football_manager.urls'
 

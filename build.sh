@@ -7,3 +7,4 @@ pip install -r requirements.txt
 
 # Collect static files with WhiteNoise
 python manage.py collectstatic --no-input
+
