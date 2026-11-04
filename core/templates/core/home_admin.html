@@ -1,0 +1,171 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - MoonVault FC{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-primary">
+                <i data-lucide="users"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ total_players }}</h3>
+                <p>Total Players</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-success">
+                <i data-lucide="user-check"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ active_players }}</h3>
+                <p>Active Players</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-danger">
+                <i data-lucide="user-x"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ inactive_players }}</h3>
+                <p>Inactive Players</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-warning">
+                <i data-lucide="message-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ unread_message_count }}</h3>
+                <p>Unread Messages</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <h2 class="section-card-title">
+            <i data-lucide="zap"></i>
+            Quick Actions
+        </h2>
+        <div class="quick-actions">
+            <a href="{% url 'player_add' %}" class="action-btn">
+                <i data-lucide="user-plus"></i>
+                <span>Add Player</span>
+            </a>
+            <a href="{% url 'players_list' %}" class="action-btn">
+                <i data-lucide="users"></i>
+                <span>View Players</span>
+            </a>
+            <a href="{% url 'tags' %}" class="action-btn">
+                <i data-lucide="qr-code"></i>
+                <span>Payment Methods</span>
+            </a>
+            <a href="{% url 'announcements' %}" class="action-btn">
+                <i data-lucide="megaphone"></i>
+                <span>Announcements</span>
+            </a>
+            <a href="{% url 'chat' %}" class="action-btn">
+                <i data-lucide="message-circle"></i>
+                <span>Open Chat</span>
+            </a>
+        </div>
+    </div>
+
+    {% if latest_announcement %}
+    <div class="section-card" style="border-left: 4px solid var(--primary);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="category-badge cat-{{ latest_announcement.category|slugify }}">{{ latest_announcement.category }}</span>
+                <span style="font-size:12px; color:var(--gray-500);">{{ latest_announcement.created_at|date:"M d, Y • h:i A" }}</span>
+            </div>
+            <a href="{% url 'announcements' %}" class="section-link" style="font-size:13px; font-weight:600; color:var(--primary);">Manage Announcements &rarr;</a>
+        </div>
+        <h3 style="font-size:16px; font-weight:700; color:var(--dark); margin-bottom:6px;">{{ latest_announcement.title }}</h3>
+        <p style="font-size:14px; color:var(--gray-600); line-height:1.5;">{{ latest_announcement.content|truncatechars:180 }}</p>
+        {% if latest_announcement.image %}
+        <div style="margin-top:10px;">
+            <a href="{% url 'announcements' %}">
+                <img src="/media/{{ latest_announcement.image }}" alt="{{ latest_announcement.title }}" style="max-height:140px; border-radius:8px; border:1px solid #bae6fd; object-fit:cover;">
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="section-card">
+        <h2 class="section-card-title">
+            <i data-lucide="clock"></i>
+            Recent Players
+        </h2>
+        {% if recent_players %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Player ID</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in recent_players %}
+                    <tr>
+                        <td>
+                            <div class="player-cell">
+                                {% if player.profile_picture %}
+                                <img src="/media/{{ player.profile_picture }}" alt="{{ player.full_name }}" class="avatar-sm">
+                                {% else %}
+                                <div class="avatar-sm avatar-placeholder">{{ player.full_name|first }}</div>
+                                {% endif %}
+                                <strong>{{ player.full_name }}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-family:monospace; font-weight:700; color:var(--primary); background:#e0f2fe; padding:2px 8px; border-radius:4px;">{{ player.player_id }}</span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ player.status|default:'active' }}">{{ player.status|default:'active'|title }}</span>
+                        </td>
+                        <td>
+                            <a href="{% url 'chat' %}?player={{ player.id }}" class="btn btn-sm btn-ghost">
+                                <i data-lucide="message-circle" style="width:13px;height:13px;"></i> Chat
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-state">No players yet. <a href="{% url 'player_add' %}">Add your first player</a>.</p>
+        {% endif %}
+    </div>
+
+    <div class="section-card">
+        <h2 class="section-card-title">
+            <i data-lucide="message-circle"></i>
+            Recent Messages
+        </h2>
+        {% if recent_messages %}
+        <div class="messages-list">
+            {% for msg in recent_messages %}
+            <div class="message-preview">
+                <div class="message-preview-header">
+                    <strong>{{ msg.sender_name }}</strong>
+                    <small>{{ msg.timestamp|date:"M d, g:i A" }}</small>
+                </div>
+                <p>{% if msg.message %}{{ msg.message|truncatechars:80 }}{% elif msg.image %}📷 Photo{% endif %}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">No messages yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

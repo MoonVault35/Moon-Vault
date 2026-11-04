@@ -1,0 +1,92 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}My Dashboard - MoonVault FC{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="welcome-card">
+        <div class="welcome-left">
+            {% if player.profile_picture %}
+            <img src="/media/{{ player.profile_picture }}" alt="{{ player.full_name }}" class="welcome-avatar">
+            {% else %}
+            <div class="welcome-avatar avatar-placeholder-lg">{{ player.full_name|first }}</div>
+            {% endif %}
+            <div class="welcome-info">
+                <h2>Welcome, {{ player.full_name }}!</h2>
+                <p class="player-id">Player ID: <strong>{{ player.player_id }}</strong></p>
+            </div>
+        </div>
+        <span class="status-badge status-{{ player.status|default:'active' }}">{{ player.status|default:'active'|title }}</span>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="info-card-icon"><i data-lucide="shield"></i></div>
+            <div>
+                <p class="info-label">Player ID</p>
+                <p class="info-value">{{ player.player_id }}</p>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon"><i data-lucide="message-circle"></i></div>
+            <div>
+                <p class="info-label">Unread Messages</p>
+                <p class="info-value">{{ unread_count }}</p>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon"><i data-lucide="qr-code"></i></div>
+            <div>
+                <p class="info-label">Club Dues</p>
+                <p class="info-value"><a href="{% url 'tags' %}" style="color:var(--primary);font-size:14px;">View Payment QR &rarr;</a></p>
+            </div>
+        </div>
+    </div>
+
+    {% if latest_announcement %}
+    <div class="section-card" style="border-left: 4px solid var(--primary); background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="category-badge cat-{{ latest_announcement.category|slugify }}">{{ latest_announcement.category }}</span>
+                <span style="font-size:12px; color:var(--gray-500);">{{ latest_announcement.created_at|date:"M d, Y • h:i A" }}</span>
+            </div>
+            <a href="{% url 'announcements' %}" class="section-link" style="font-size:13px; font-weight:600; color:var(--primary);">All Announcements &rarr;</a>
+        </div>
+        <h3 style="font-size:16px; font-weight:700; color:var(--dark); margin-bottom:6px;">{{ latest_announcement.title }}</h3>
+        <p style="font-size:14px; color:var(--gray-600); line-height:1.5;">{{ latest_announcement.content|truncatechars:180 }}</p>
+        {% if latest_announcement.image %}
+        <div style="margin-top:10px;">
+            <a href="{% url 'announcements' %}">
+                <img src="/media/{{ latest_announcement.image }}" alt="{{ latest_announcement.title }}" style="max-height:140px; border-radius:8px; border:1px solid #bae6fd; object-fit:cover;">
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="section-card">
+        <h2 class="section-card-title">
+            <i data-lucide="message-circle"></i>
+            Recent Messages
+            <a href="{% url 'chat' %}" class="section-link">View All</a>
+        </h2>
+        {% if recent_messages %}
+        <div class="messages-list">
+            {% for msg in recent_messages %}
+            <div class="message-preview">
+                <div class="message-preview-header">
+                    <strong>{% if msg.sender_id == user_id %}You{% else %}Admin{% endif %}</strong>
+                    <small>{{ msg.timestamp|date:"M d, g:i A" }}</small>
+                </div>
+                <p>{% if msg.message %}{{ msg.message|truncatechars:60 }}{% elif msg.image %}📷 Photo{% endif %}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">No messages yet. <a href="{% url 'chat' %}">Start a conversation with Admin</a>.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

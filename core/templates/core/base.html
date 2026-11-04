@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MoonVault{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% if is_authenticated %}
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i data-lucide="shield" class="logo-icon"></i>
+                    <span>MoonVault</span>
+                </div>
+                <button class="sidebar-close" id="sidebar-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'home' %}" class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <i data-lucide="home"></i>
+                    <span>Home</span>
+                </a>
+                {% if is_admin %}
+                <a href="{% url 'players_list' %}" class="sidebar-link {% if 'player' in request.resolver_match.url_name and request.resolver_match.url_name != 'home' %}active{% endif %}">
+                    <i data-lucide="users"></i>
+                    <span>Players</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'announcements' %}" class="sidebar-link {% if 'announcement' in request.resolver_match.url_name %}active{% endif %}">
+                    <i data-lucide="megaphone"></i>
+                    <span>Announcements</span>
+                </a>
+                <a href="{% url 'chat' %}" class="sidebar-link {% if request.resolver_match.url_name == 'chat' %}active{% endif %}">
+                    <i data-lucide="message-circle"></i>
+                    <span>Chat</span>
+                    {% if unread_message_count %}
+                    <span class="badge">{{ unread_message_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'tags' %}" class="sidebar-link {% if 'tag' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name %}active{% endif %}">
+                    <i data-lucide="qr-code"></i>
+                    <span>Payment Methods</span>
+                </a>
+                <a href="{% url 'support' %}" class="sidebar-link {% if 'support' in request.resolver_match.url_name %}active{% endif %}">
+                    <i data-lucide="headphones"></i>
+                    <span>Support</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="{% url 'logout' %}" class="sidebar-link">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <button class="menu-toggle" id="menu-toggle">
+                    <i data-lucide="menu"></i>
+                </button>
+                <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                <div class="topbar-right">
+                    <span class="user-info">
+                        <i data-lucide="user"></i>
+                        {{ full_name|default:username }}
+                        <span class="role-badge {% if is_admin %}role-admin{% else %}role-player{% endif %}">
+                            {{ user_role|title }}
+                        </span>
+                    </span>
+                </div>
+            </header>
+
+            {% if messages %}
+            <div class="alerts-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" data-alert>
+                    <span>{{ message }}</span>
+                    <button class="alert-close" onclick="this.parentElement.remove()">
+                        <i data-lucide="x" style="width:16px;height:16px;"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="content-area">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    {% else %}
+        {% block public_content %}{% endblock %}
+    {% endif %}
+
+    <script src="{% static 'core/js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+    <script>
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,67 @@
+# ==========================================
+# MoonVault FC - Git Ignore Configuration
+# ==========================================
+
+# 1. Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 2. Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# 3. Environment Variables & Secrets (CRITICAL)
+.env
+.env.local
+.env.*.local
+.env.prod
+.env.staging
+!.env.example
+
+# 4. Django & Runtime artifacts
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+staticfiles/
+*.log
+logs/
+
+# 5. Media Uploads (keep folder structure via .gitkeep, ignore uploaded files)
+media/profile_pics/*
+!media/profile_pics/.gitkeep
+media/announcements/*
+!media/announcements/.gitkeep
+media/chat_images/*
+!media/chat_images/.gitkeep
+media/qr_codes/*
+!media/qr_codes/.gitkeep
+
+# 6. IDEs & Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# 7. Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# 8. Testing & Coverage
+.coverage
+htmlcov/
+.pytest_cache/

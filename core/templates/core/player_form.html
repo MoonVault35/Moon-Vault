@@ -1,0 +1,90 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Edit Player{% else %}Add Player{% endif %} - MoonVault FC{% endblock %}
+{% block page_title %}{% if is_edit %}Edit Player{% else %}Add New Player{% endif %}{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card form-card-narrow">
+        <div class="form-card-header">
+            <i data-lucide="{% if is_edit %}user-cog{% else %}user-plus{% endif %}" style="width:36px;height:36px;color:var(--primary);"></i>
+            <h2>{% if is_edit %}Edit Player Information{% else %}Create Player Account{% endif %}</h2>
+            <p class="text-muted">
+                {% if is_edit %}
+                Update player details. Player ID: <strong>{{ player.player_id }}</strong>
+                {% else %}
+                Player ID will be automatically generated. Players can log in using their Player ID or Full Name.
+                {% endif %}
+            </p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="player-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="full_name">
+                    <i data-lucide="user" style="width:16px;height:16px;"></i>
+                    Full Name *
+                </label>
+                <input type="text" id="full_name" name="full_name"
+                       value="{% if is_edit %}{{ player.full_name }}{% elif form_data %}{{ form_data.full_name }}{% endif %}"
+                       required placeholder="Enter player's full name">
+            </div>
+
+            <div class="form-group">
+                <label for="password">
+                    <i data-lucide="lock" style="width:16px;height:16px;"></i>
+                    {% if is_edit %}New Password (leave blank to keep current){% else %}Password *{% endif %}
+                </label>
+                <input type="password" id="password" name="password"
+                       {% if not is_edit %}required{% endif %}
+                       placeholder="{% if is_edit %}Leave blank to keep current password{% else %}Minimum 6 characters{% endif %}"
+                       minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <i data-lucide="image" style="width:16px;height:16px;"></i>
+                    Profile Picture <span style="font-size:12px; font-weight:normal; color:var(--gray-500);">(Optional)</span>
+                </label>
+                {% if is_edit and player.profile_picture %}
+                <div class="current-image" style="margin-bottom:12px; display:flex; align-items:center; gap:12px;">
+                    <img src="/media/{{ player.profile_picture }}" alt="Current photo" class="preview-img" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #bae6fd;">
+                    <span style="font-size:12px; color:var(--gray-500);">Current photo attached (upload below to replace)</span>
+                </div>
+                {% endif %}
+                <div class="dropzone-box">
+                    <input type="file" id="profile_picture" name="profile_picture" accept="image/*" class="dropzone-input">
+                    <div class="dropzone-prompt">
+                        <div class="dropzone-icon">
+                            <i data-lucide="upload-cloud"></i>
+                        </div>
+                        <div class="dropzone-text">
+                            <strong>Choose a player photo</strong> or drag &amp; drop here
+                            <small>JPG, PNG, or WebP</small>
+                        </div>
+                    </div>
+                    <div class="dropzone-preview" style="display:none;">
+                        <img src="" alt="Preview" class="dropzone-preview-img">
+                        <div class="dropzone-preview-info">
+                            <span class="dropzone-file-name"></span>
+                            <button type="button" class="dropzone-clear-btn">
+                                <i data-lucide="x" style="width:12px;height:12px;"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'players_list' %}" class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="{% if is_edit %}save{% else %}user-plus{% endif %}"></i>
+                    {% if is_edit %}Save Changes{% else %}Create Player{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoonVault - Gaming Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="landing-page">
+    <nav class="landing-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i data-lucide="shield"></i>
+                <span>MoonVault</span>
+            </div>
+            <div class="nav-links" id="nav-links">
+                <a href="#about">About</a>
+                <a href="#features">Features</a>
+                <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+            </div>
+            <button class="nav-mobile-toggle" id="nav-mobile-toggle">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>MoonVault</h1>
+            <p class="hero-subtitle">Gaming Management System</p>
+            <p class="hero-description">Manage your accounts and communicate seamlessly all in one place.</p>
+            <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                <i data-lucide="log-in"></i>
+                Get Started
+            </a>
+        </div>
+    </section>
+
+    <section class="landing-section" id="about">
+        <div class="section-container">
+            <h2 class="section-title">About MoonVault</h2>
+            <p class="section-description">
+                MoonVault is a modern player management platform designed for players.
+                Keep players, manage payment QR methods, and maintain
+                direct communication through our built-in chat system.
+            </p>
+            <div class="about-cards">
+                <div class="about-card">
+                    <i data-lucide="users"></i>
+                    <h3>Team Management</h3>
+                    <p>Organize and manage in one centralized system with clean, dedicated profiles.</p>
+                </div>
+                <div class="about-card">
+                    <i data-lucide="message-circle"></i>
+                    <h3>Direct Communication</h3>
+                    <p>Built-in real-time chat system for seamless communication between admin and players.</p>
+                </div>
+                <div class="about-card">
+                    <i data-lucide="shield-check"></i>
+                    <h3>Secure &amp; Private</h3>
+                    <p>Role-based access control ensures data privacy and security for all team members.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section landing-section-alt" id="features">
+        <div class="section-container">
+            <h2 class="section-title">Features</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <i data-lucide="user-plus"></i>
+                    <h3>Player Profiles</h3>
+                    <p>Create and manage player records with photos, sequential Player IDs, and direct credentials.</p>
+                </div>
+                <div class="feature-item">
+                    <i data-lucide="qr-code"></i>
+                    <h3>Payment Methods</h3>
+                    <p>Centralized payment QR codes and details accessible to all players at a glance.</p>
+                </div>
+                <div class="feature-item">
+                    <i data-lucide="message-square"></i>
+                    <h3>Real-Time Chat</h3>
+                    <p>Instant messaging between admin and players.</p>
+                </div>
+                <div class="feature-item">
+                    <i data-lucide="search"></i>
+                    <h3>Quick Search</h3>
+                    <p>Find players instantly by name.</p>
+                </div>
+                <div class="feature-item">
+                    <i data-lucide="smartphone"></i>
+                    <h3>Responsive Design</h3>
+                    <p>Access your dashboard from any device, desktop, tablet, or mobile.</p>
+                </div>
+                <div class="feature-item">
+                    <i data-lucide="headphones"></i>
+                    <h3>Support Info</h3>
+                    <p>Quick access to official contact information and social media links.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="landing-footer">
+        <div class="footer-container">
+            <div class="footer-logo">
+                <i data-lucide="shield"></i>
+                <span>MoonVault</span>
+            </div>
+            <p>&copy; 2024 MoonVault. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        const navToggle = document.getElementById('nav-mobile-toggle');
+        const navLinks = document.getElementById('nav-links');
+        if (navToggle) {
+            navToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('nav-open');
+            });
+        }
+    </script>
+</body>
+</html>
+

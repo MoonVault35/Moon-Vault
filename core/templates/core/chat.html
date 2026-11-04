@@ -1,0 +1,315 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Chat - MoonVault FC{% endblock %}
+{% block page_title %}Team Chat{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/chat.css' %}?v=3.1">
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    {% if is_admin %}
+    <!-- Admin Chat Sidebar -->
+    <div class="chat-sidebar" id="chat-sidebar">
+        <div class="chat-sidebar-header">
+            <div class="chat-sidebar-title-row">
+                <h3>Messages</h3>
+                <span class="chat-online-count">{{ players|length }} Player{{ players|length|pluralize }}</span>
+            </div>
+            <div class="chat-sidebar-search">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="player-search" placeholder="Search conversations..." class="search-input-sm" autocomplete="off">
+                <button type="button" id="clear-search" class="search-clear-btn" style="display:none;" title="Clear search">
+                    <i data-lucide="x" style="width:14px;height:14px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-player-list" id="player-list">
+            {% for player in players %}
+            <a href="{% url 'chat' %}?player={{ player.id }}"
+               class="chat-player-item {% if active_player and active_player.id == player.id %}active{% endif %}"
+               data-player-id="{{ player.id }}" data-name="{{ player.full_name|lower }} {{ player.player_id|lower }}">
+                <div class="chat-player-avatar">
+                    {% if player.profile_picture %}
+                    <img src="/media/{{ player.profile_picture }}" alt="{{ player.full_name }}">
+                    {% else %}
+                    <div class="avatar-placeholder-sm">{{ player.full_name|first }}</div>
+                    {% endif %}
+                    <span class="online-dot status-dot-{{ player.status|default:'active' }}"></span>
+                </div>
+                <div class="chat-player-info">
+                    <div class="player-info-top">
+                        <strong class="player-name">{{ player.full_name }}</strong>
+                        {% if player.last_time %}
+                        <span class="player-last-time">{{ player.last_time|date:"g:i A" }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="player-info-bottom">
+                        <small class="player-snippet">{{ player.last_message|default:"No messages yet"|truncatechars:32 }}</small>
+                        {% if player.unread > 0 %}
+                        <span class="chat-unread-badge">{{ player.unread }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+            {% if not players %}
+            <div class="chat-empty">
+                <i data-lucide="users" style="width:36px;height:36px;color:var(--gray-400);margin-bottom:8px;"></i>
+                <p>No players enrolled yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Admin Chat Main Area -->
+    <div class="chat-main">
+        {% if active_player %}
+        <div class="chat-header">
+            <button class="chat-back-btn" id="chat-back-btn" title="Back to messages">
+                <i data-lucide="arrow-left"></i>
+            </button>
+            <div class="chat-header-info">
+                <div class="chat-header-avatar-wrap">
+                    {% if active_player.profile_picture %}
+                    <img src="/media/{{ active_player.profile_picture }}" alt="{{ active_player.full_name }}" class="avatar-sm">
+                    {% else %}
+                    <div class="avatar-sm avatar-placeholder">{{ active_player.full_name|first }}</div>
+                    {% endif %}
+                    <span class="online-dot status-dot-{{ active_player.status|default:'active' }}"></span>
+                </div>
+                <div>
+                    <div class="header-name-row">
+                        <strong>{{ active_player.full_name }}</strong>
+                        <span class="player-id-pill">{{ active_player.player_id }}</span>
+                    </div>
+                    <small class="header-status">
+                        <i data-lucide="circle" style="width:8px;height:8px;fill:#10b981;color:#10b981;"></i>
+                        Active • Direct Chat
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-encryption-notice">
+                <i data-lucide="shield-check" style="width:14px;height:14px;"></i>
+                <span>Direct communication between Admin and {{ active_player.full_name }}.</span>
+            </div>
+
+            {% for msg in chat_messages %}
+            <div class="chat-bubble {% if msg.sender_id == user_id %}chat-bubble-sent{% else %}chat-bubble-received{% endif %}">
+                {% if msg.image %}
+                <div class="chat-bubble-image-wrap">
+                    <img src="/media/{{ msg.image }}" alt="Attached photo" class="chat-bubble-img" onclick="openLightbox('/media/{{ msg.image }}')" loading="lazy">
+                </div>
+                {% endif %}
+                {% if msg.message %}
+                <p class="chat-bubble-text">{{ msg.message }}</p>
+                {% endif %}
+                <div class="chat-bubble-meta">
+                    <span class="chat-time">{{ msg.timestamp|date:"g:i A" }}</span>
+                    {% if msg.sender_id == user_id %}
+                    <span class="chat-status-icon {% if msg.is_read %}read{% endif %}">
+                        {% if msg.is_read %}
+                        <i data-lucide="check-check" style="width:14px;height:14px;"></i>
+                        {% else %}
+                        <i data-lucide="check" style="width:14px;height:14px;"></i>
+                        {% endif %}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if not chat_messages %}
+            <div class="chat-empty-messages">
+                <div class="empty-chat-icon">
+                    <i data-lucide="message-square"></i>
+                </div>
+                <h4>Start the conversation</h4>
+                <p>Send a message or share an image with {{ active_player.full_name }}.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Attachment Staging Tray -->
+        <div class="chat-attachment-staging" id="attachment-staging" style="display:none;">
+            <div class="staging-card">
+                <div class="staging-thumb-box">
+                    <img src="" id="staging-thumb" alt="Preview">
+                    <button type="button" class="staging-remove-btn" id="staging-remove-btn" title="Remove attachment">
+                        <i data-lucide="x" style="width:12px;height:12px;"></i>
+                    </button>
+                </div>
+                <div class="staging-info">
+                    <div class="staging-top-row">
+                        <span class="staging-badge"><i data-lucide="image" style="width:12px;height:12px;"></i> Photo Attached</span>
+                        <span class="staging-name" id="staging-filename">photo.jpg</span>
+                    </div>
+                    <small class="staging-hint">Ready to send • Press Enter or click Send</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unified Modern Chat Input Bar -->
+        <div class="chat-input-area">
+            <form id="chat-form" class="chat-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="receiver-id" value="{{ active_player.id }}">
+                <input type="file" id="chat-image-input" name="image" accept="image/*" class="chat-hidden-file-input">
+
+                <div class="chat-input-pill-container">
+                    <label for="chat-image-input" class="chat-attach-btn" id="chat-attach-label" title="Attach an image (or paste Ctrl+V)">
+                        <i data-lucide="image"></i>
+                    </label>
+                    <input type="text" id="message-input" class="chat-text-input" placeholder="Type a message or paste an image (Ctrl+V)..." autocomplete="off">
+                </div>
+
+                <button type="submit" class="chat-send-btn" id="chat-send-btn" title="Send message">
+                    <i data-lucide="send"></i>
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="chat-no-selection">
+            <div class="no-selection-circle">
+                <i data-lucide="messages-square"></i>
+            </div>
+            <h3>Select a Conversation</h3>
+            <p>Pick a player from the left panel to review chat history and exchange messages or photos in real time.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <!-- Player Chat View -->
+    <div class="chat-main chat-main-full">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="chat-header-avatar-wrap">
+                    <div class="avatar-sm admin-avatar-shield">
+                        <i data-lucide="shield"></i>
+                    </div>
+                    <span class="online-dot status-dot-active"></span>
+                </div>
+                <div>
+                    <div class="header-name-row">
+                        <strong>MoonVault FC Official Support</strong>
+                        <span class="role-badge role-admin" style="font-size:11px;padding:2px 8px;">Admin</span>
+                    </div>
+                    <small class="header-status">
+                        <i data-lucide="circle" style="width:8px;height:8px;fill:#10b981;color:#10b981;"></i>
+                        Official Club Desk • Typically replies immediately
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-encryption-notice">
+                <i data-lucide="shield-check" style="width:14px;height:14px;"></i>
+                <span>Direct support channel with Club Admin. Share inquiries, payment slips, or questions.</span>
+            </div>
+
+            {% for msg in chat_messages %}
+            <div class="chat-bubble {% if msg.sender_id == user_id %}chat-bubble-sent{% else %}chat-bubble-received{% endif %}">
+                {% if msg.image %}
+                <div class="chat-bubble-image-wrap">
+                    <img src="/media/{{ msg.image }}" alt="Attached photo" class="chat-bubble-img" onclick="openLightbox('/media/{{ msg.image }}')" loading="lazy">
+                </div>
+                {% endif %}
+                {% if msg.message %}
+                <p class="chat-bubble-text">{{ msg.message }}</p>
+                {% endif %}
+                <div class="chat-bubble-meta">
+                    <span class="chat-time">{{ msg.timestamp|date:"g:i A" }}</span>
+                    {% if msg.sender_id == user_id %}
+                    <span class="chat-status-icon {% if msg.is_read %}read{% endif %}">
+                        {% if msg.is_read %}
+                        <i data-lucide="check-check" style="width:14px;height:14px;"></i>
+                        {% else %}
+                        <i data-lucide="check" style="width:14px;height:14px;"></i>
+                        {% endif %}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if not chat_messages %}
+            <div class="chat-empty-messages">
+                <div class="empty-chat-icon">
+                    <i data-lucide="message-square"></i>
+                </div>
+                <h4>Welcome to Club Support</h4>
+                <p>Have questions, need schedule details, or want to send a payment proof? Send a message below!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Attachment Staging Tray -->
+        <div class="chat-attachment-staging" id="attachment-staging" style="display:none;">
+            <div class="staging-card">
+                <div class="staging-thumb-box">
+                    <img src="" id="staging-thumb" alt="Preview">
+                    <button type="button" class="staging-remove-btn" id="staging-remove-btn" title="Remove attachment">
+                        <i data-lucide="x" style="width:12px;height:12px;"></i>
+                    </button>
+                </div>
+                <div class="staging-info">
+                    <div class="staging-top-row">
+                        <span class="staging-badge"><i data-lucide="image" style="width:12px;height:12px;"></i> Photo Attached</span>
+                        <span class="staging-name" id="staging-filename">photo.jpg</span>
+                    </div>
+                    <small class="staging-hint">Ready to send • Press Enter or click Send</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unified Modern Chat Input Bar -->
+        <div class="chat-input-area">
+            <form id="chat-form" class="chat-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="receiver-id" value="{{ admin_id }}">
+                <input type="file" id="chat-image-input" name="image" accept="image/*" class="chat-hidden-file-input">
+
+                <div class="chat-input-pill-container">
+                    <label for="chat-image-input" class="chat-attach-btn" id="chat-attach-label" title="Attach an image (payment slip, photo, etc.)">
+                        <i data-lucide="image"></i>
+                    </label>
+                    <input type="text" id="message-input" class="chat-text-input" placeholder="Type a message or paste an image (Ctrl+V)..." autocomplete="off">
+                </div>
+
+                <button type="submit" class="chat-send-btn" id="chat-send-btn" title="Send message">
+                    <i data-lucide="send"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Lightbox Modal for Fullscreen Image Viewing -->
+<div class="chat-lightbox" id="chat-lightbox" style="display:none;">
+    <div class="lightbox-overlay" onclick="closeLightbox()"></div>
+    <div class="lightbox-content">
+        <button type="button" class="lightbox-close" onclick="closeLightbox()" title="Close image viewer">
+            <i data-lucide="x"></i>
+        </button>
+        <img src="" id="lightbox-img" alt="Enlarged photo view">
+        <div class="lightbox-toolbar">
+            <a href="" id="lightbox-download" download class="btn btn-sm btn-primary" target="_blank">
+                <i data-lucide="download" style="width:14px;height:14px;"></i> Download Photo
+            </a>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="closeLightbox()">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'core/js/chat.js' %}?v=3.1"></script>
+{% endblock %}

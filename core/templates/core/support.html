@@ -1,0 +1,91 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Support - MoonVault FC{% endblock %}
+{% block page_title %}Support{% endblock %}
+
+{% block content %}
+<div class="support-page">
+    <div class="support-card">
+        <div class="support-header">
+            <i data-lucide="headphones" style="width:48px;height:48px;color:var(--primary);"></i>
+            <h2>Contact Support</h2>
+            {% if support.support_message %}
+            <p>{{ support.support_message }}</p>
+            {% else %}
+            <p>For any inquiries, please reach out through our official channels below.</p>
+            {% endif %}
+        </div>
+
+        <div class="support-contacts">
+            {% if support.facebook_page_url %}
+            <a href="{{ support.facebook_page_url }}" target="_blank" rel="noopener" class="support-item">
+                <div class="support-item-icon support-item-facebook">
+                    <i data-lucide="globe"></i>
+                </div>
+                <div class="support-item-info">
+                    <strong>Facebook Page</strong>
+                    <small>Visit our official Facebook page</small>
+                </div>
+                <i data-lucide="external-link" style="width:16px;height:16px;"></i>
+            </a>
+            {% endif %}
+
+            {% if support.messenger_url %}
+            <a href="{{ support.messenger_url }}" target="_blank" rel="noopener" class="support-item">
+                <div class="support-item-icon support-item-messenger">
+                    <i data-lucide="message-circle"></i>
+                </div>
+                <div class="support-item-info">
+                    <strong>Messenger</strong>
+                    <small>Chat with us on Messenger</small>
+                </div>
+                <i data-lucide="external-link" style="width:16px;height:16px;"></i>
+            </a>
+            {% endif %}
+
+            {% if support.contact_number %}
+            <a href="tel:{{ support.contact_number }}" class="support-item">
+                <div class="support-item-icon support-item-phone">
+                    <i data-lucide="phone"></i>
+                </div>
+                <div class="support-item-info">
+                    <strong>Contact Number</strong>
+                    <small>{{ support.contact_number }}</small>
+                </div>
+                <i data-lucide="phone-call" style="width:16px;height:16px;"></i>
+            </a>
+            {% endif %}
+
+            {% if support.alternative_number %}
+            <a href="tel:{{ support.alternative_number }}" class="support-item">
+                <div class="support-item-icon support-item-phone">
+                    <i data-lucide="phone"></i>
+                </div>
+                <div class="support-item-info">
+                    <strong>Alternative Number</strong>
+                    <small>{{ support.alternative_number }}</small>
+                </div>
+                <i data-lucide="phone-call" style="width:16px;height:16px;"></i>
+            </a>
+            {% endif %}
+
+            {% if not support or not support.facebook_page_url and not support.messenger_url and not support.contact_number %}
+            <div class="empty-state-large">
+                <i data-lucide="info" style="width:40px;height:40px;"></i>
+                <p>No contact information available yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if is_admin %}
+        <div class="support-admin-actions">
+            <a href="{% url 'support_edit' %}" class="btn btn-primary">
+                <i data-lucide="edit"></i> Edit Support Information
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

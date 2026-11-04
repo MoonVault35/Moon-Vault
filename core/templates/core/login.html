@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MoonVault FC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <i data-lucide="shield" class="login-logo-icon"></i>
+                <h1>MoonVault FC</h1>
+                <p>Sign in to your account</p>
+            </div>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" class="login-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">
+                        <i data-lucide="user" style="width:16px;height:16px;"></i>
+                        Username or Player ID
+                    </label>
+                    <input type="text" id="username" name="username" required autofocus placeholder="Enter your username or player ID">
+                </div>
+                <div class="form-group">
+                    <label for="password">
+                        <i data-lucide="lock" style="width:16px;height:16px;"></i>
+                        Password
+                    </label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">
+                    <i data-lucide="log-in"></i>
+                    Sign In
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <a href="{% url 'landing' %}">
+                    <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
+

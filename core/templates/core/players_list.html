@@ -1,0 +1,82 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Players - MoonVault FC{% endblock %}
+{% block page_title %}Player Management{% endblock %}
+
+{% block content %}
+<div class="players-page">
+    <div class="toolbar">
+        <form method="get" class="search-form">
+            <div class="search-input-wrapper">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Search players..." class="search-input">
+            </div>
+            <button type="submit" class="btn btn-secondary">Search</button>
+            {% if search_query %}
+            <a href="{% url 'players_list' %}" class="btn btn-ghost">Clear</a>
+            {% endif %}
+        </form>
+        <a href="{% url 'player_add' %}" class="btn btn-primary">
+            <i data-lucide="user-plus"></i> Add Player
+        </a>
+    </div>
+
+    {% if players %}
+    <div class="players-grid">
+        {% for player in players %}
+        <div class="player-card">
+            <div class="player-card-header">
+                {% if player.profile_picture %}
+                <img src="/media/{{ player.profile_picture }}" alt="{{ player.full_name }}" class="player-card-avatar">
+                {% else %}
+                <div class="player-card-avatar avatar-placeholder-md">{{ player.full_name|first }}</div>
+                {% endif %}
+                <span class="status-dot status-dot-{{ player.status }}"></span>
+            </div>
+            <div class="player-card-body">
+                <h3>{{ player.full_name }}</h3>
+                <p class="player-card-id" style="font-size:13px;font-weight:600;color:var(--primary);margin-top:4px;">{{ player.player_id }}</p>
+                <div style="margin-top:8px;">
+                    <span class="status-badge status-{{ player.status|default:'active' }}">
+                        {{ player.status|default:'active'|title }}
+                    </span>
+                </div>
+            </div>
+            <div class="player-card-actions">
+                <a href="{% url 'chat' %}?player={{ player.id }}" class="btn btn-sm btn-ghost" title="Chat">
+                    <i data-lucide="message-circle" style="width:14px;height:14px;"></i> Chat
+                </a>
+                <a href="{% url 'player_edit' player.id %}" class="btn btn-sm btn-secondary" title="Edit">
+                    <i data-lucide="edit-2" style="width:14px;height:14px;"></i> Edit
+                </a>
+                <form method="post" action="{% url 'player_toggle_status' player.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm {% if player.status == 'active' %}btn-warning{% else %}btn-success{% endif %}">
+                        <i data-lucide="{% if player.status == 'active' %}user-x{% else %}user-check{% endif %}" style="width:14px;height:14px;"></i>
+                        {% if player.status == 'active' %}Deactivate{% else %}Activate{% endif %}
+                    </button>
+                </form>
+                <form method="post" action="{% url 'player_delete' player.id %}" style="display:inline;" onsubmit="return confirm('Delete {{ player.full_name }}? This cannot be undone.')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                        <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state-large">
+        <i data-lucide="users" style="width:48px;height:48px;"></i>
+        <h3>{% if search_query %}No players found{% else %}No players yet{% endif %}</h3>
+        <p>{% if search_query %}Try a different search term.{% else %}Get started by adding your first player.{% endif %}</p>
+        {% if not search_query %}
+        <a href="{% url 'player_add' %}" class="btn btn-primary"><i data-lucide="user-plus"></i> Add Player</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

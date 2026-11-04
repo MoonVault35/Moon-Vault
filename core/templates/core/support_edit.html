@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Edit Support - MoonVault FC{% endblock %}
+{% block page_title %}Edit Support Information{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card">
+        <form method="post" class="support-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="facebook_page_url"><i data-lucide="globe" style="width:16px;height:16px;"></i> Facebook Page URL</label>
+                <input type="url" id="facebook_page_url" name="facebook_page_url"
+                       value="{{ support.facebook_page_url|default:'' }}" placeholder="https://facebook.com/yourpage">
+            </div>
+            <div class="form-group">
+                <label for="messenger_url"><i data-lucide="message-circle" style="width:16px;height:16px;"></i> Messenger URL</label>
+                <input type="url" id="messenger_url" name="messenger_url"
+                       value="{{ support.messenger_url|default:'' }}" placeholder="https://m.me/yourpage">
+            </div>
+            <div class="form-group">
+                <label for="contact_number"><i data-lucide="phone" style="width:16px;height:16px;"></i> Contact Number</label>
+                <input type="tel" id="contact_number" name="contact_number"
+                       value="{{ support.contact_number|default:'' }}" placeholder="+1234567890">
+            </div>
+            <div class="form-group">
+                <label for="alternative_number"><i data-lucide="phone" style="width:16px;height:16px;"></i> Alternative Contact Number</label>
+                <input type="tel" id="alternative_number" name="alternative_number"
+                       value="{{ support.alternative_number|default:'' }}" placeholder="+1234567890 (optional)">
+            </div>
+            <div class="form-group">
+                <label for="support_message"><i data-lucide="file-text" style="width:16px;height:16px;"></i> Support Message</label>
+                <textarea id="support_message" name="support_message" rows="3"
+                          placeholder="Enter a support message for players...">{{ support.support_message|default:'' }}</textarea>
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'support' %}" class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

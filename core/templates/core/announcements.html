@@ -1,0 +1,345 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Announcements - MoonVault FC{% endblock %}
+{% block page_title %}Announcements{% endblock %}
+
+{% block content %}
+<div class="announcements-page">
+    {% if is_admin %}
+    <!-- Admin: Daily Limit & Post Announcement -->
+    <div class="section-card announcements-header-card">
+        <div class="announcement-limit-bar">
+            <div class="limit-info">
+                <div class="limit-icon-wrap">
+                    <i data-lucide="megaphone"></i>
+                </div>
+                <div>
+                    <h2 style="font-size:18px; font-weight:700; color:var(--dark); margin:0;">Post New Announcement</h2>
+                    <p style="font-size:13px; color:var(--gray-500); margin-top:2px;">
+                        Daily Quota: <strong>{{ today_count }} of {{ max_daily }}</strong> announcements posted today
+                    </p>
+                </div>
+            </div>
+            <div class="limit-badge-box">
+                {% if can_post_today %}
+                <span class="quota-badge quota-available">
+                    <i data-lucide="check-circle" style="width:14px;height:14px;"></i>
+                    {{ remaining_today }} post{{ remaining_today|pluralize }} left today
+                </span>
+                {% else %}
+                <span class="quota-badge quota-full">
+                    <i data-lucide="alert-circle" style="width:14px;height:14px;"></i>
+                    Daily limit reached (4/4)
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Progress meter for 4 posts a day -->
+        <div class="quota-progress-track">
+            <div class="quota-progress-fill progress-{{ today_count }}"></div>
+        </div>
+
+        {% if can_post_today %}
+        <form method="post" action="{% url 'announcement_add' %}" enctype="multipart/form-data" class="announcement-form" style="margin-top:20px;">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="form-group" style="grid-column: span 8;">
+                    <label for="title">Announcement Title *</label>
+                    <input type="text" id="title" name="title" required placeholder="e.g. Friendly Match Schedule this Saturday">
+                </div>
+                <div class="form-group" style="grid-column: span 4;">
+                    <label for="category">Category</label>
+                    <select id="category" name="category">
+                        <option value="General">📢 General Notice</option>
+                        <option value="Urgent">⚠️ Urgent / Important</option>
+                        <option value="Giveaway">🎁 Giveaway</option>
+                    </select>
+                </div>
+                <div class="form-group form-group-full">
+                    <label for="content">Announcement Message *</label>
+                    <textarea id="content" name="content" rows="4" required placeholder="Write the details of the announcement here..."></textarea>
+                </div>
+                <div class="form-group form-group-full">
+                    <label>
+                        <i data-lucide="image" style="width:14px;height:14px;vertical-align:-2px;color:var(--primary);"></i>
+                        Attach Image <span style="font-size:12px; font-weight:normal; color:var(--gray-500);">(Optional — JPG, PNG, WebP)</span>
+                    </label>
+                    <div class="dropzone-box">
+                        <input type="file" id="image" name="image" accept="image/*" class="dropzone-input">
+                        <div class="dropzone-prompt">
+                            <div class="dropzone-icon">
+                                <i data-lucide="upload-cloud"></i>
+                            </div>
+                            <div class="dropzone-text">
+                                <strong>Choose an image</strong> or drag and drop here
+                                <small>JPG, PNG, or WebP</small>
+                            </div>
+                        </div>
+                        <div class="dropzone-preview" style="display:none;">
+                            <img src="" alt="Preview" class="dropzone-preview-img">
+                            <div class="dropzone-preview-info">
+                                <span class="dropzone-file-name"></span>
+                                <button type="button" class="dropzone-clear-btn">
+                                    <i data-lucide="x" style="width:12px;height:12px;"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions" style="margin-top:14px; padding-top:12px; border-top:1px solid #e0f2fe; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:12px; color:var(--gray-500);">
+                    <i data-lucide="info" style="width:14px;height:14px;vertical-align:-2px;color:var(--primary);"></i>
+                    Maximum 4 announcements can be posted per day.
+                </span>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="send"></i>
+                    Publish Announcement
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div class="daily-limit-alert">
+            <i data-lucide="lock" style="width:20px;height:20px;color:var(--warning);"></i>
+            <div>
+                <strong>Daily Limit Reached (4 of 4 posted)</strong>
+                <p>You have published all 4 allowed announcements for today. The daily limit will automatically reset tomorrow.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <!-- Player: Read-only Banner -->
+    <div class="section-card player-announcement-banner">
+        <div style="display:flex; align-items:center; gap:14px;">
+            <div class="announcement-player-icon">
+                <i data-lucide="megaphone"></i>
+            </div>
+            <div>
+                <h2 style="font-size:18px; font-weight:700; color:var(--dark); margin:0;">MoonVault Announcements</h2>
+                <p style="font-size:13px; color:var(--gray-600); margin-top:2px;">
+                    Official updates, Giveaways, delay notifications and Break schedules published by platform management.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Announcements Feed -->
+    <div class="announcements-feed">
+        <div class="feed-header">
+            <h3 class="feed-title">
+                <i data-lucide="clock"></i>
+                All Announcements ({{ announcements|length }})
+            </h3>
+        </div>
+
+        {% if announcements %}
+        <div class="announcements-list">
+            {% for a in announcements %}
+            <article class="announcement-card {% if a.category == 'Urgent' %}announcement-urgent{% elif a.category == 'Match Day' %}announcement-match{% elif a.category == 'Training' %}announcement-training{% endif %}">
+                <div class="announcement-card-header">
+                    <div class="announcement-meta-left">
+                        <span class="category-badge cat-{{ a.category|slugify }}">
+                            {% if a.category == 'Match Day' %}⚽ Match Day
+                            {% elif a.category == 'Training' %}🏃 Training
+                            {% elif a.category == 'Urgent' %}⚠️ Urgent
+                            {% elif a.category == 'Club Event' %}🏆 Club Event
+                            {% else %}📢 General{% endif %}
+                        </span>
+                        {% if a.is_today %}
+                        <span class="badge-today">New Today</span>
+                        {% endif %}
+                        <span class="announcement-date">
+                            <i data-lucide="calendar" style="width:13px;height:13px;"></i>
+                            {{ a.created_at|date:"M d, Y" }} at {{ a.created_at|date:"h:i A" }}
+                        </span>
+                    </div>
+
+                    {% if is_admin %}
+                    <div class="announcement-actions">
+                        <button type="button" class="btn btn-sm btn-ghost edit-ann-btn"
+                                data-id="{{ a.id }}"
+                                data-title="{{ a.title }}"
+                                data-category="{{ a.category }}"
+                                data-content="{{ a.content }}"
+                                data-image="{{ a.image|default:'' }}"
+                                title="Edit announcement">
+                            <i data-lucide="edit-2" style="width:14px;height:14px;"></i>
+                            Edit
+                        </button>
+                        <form method="post" action="{% url 'announcement_delete' a.id %}" onsubmit="return confirm('Delete this announcement?');" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" title="Delete announcement">
+                                <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <h3 class="announcement-title">{{ a.title }}</h3>
+
+                <div class="announcement-body">
+                    {{ a.content|linebreaks }}
+                </div>
+
+                {% if a.image %}
+                <div class="announcement-media-wrap">
+                    <a href="/media/{{ a.image }}" target="_blank" rel="noopener" class="announcement-img-link" title="Click to view full image">
+                        <img src="/media/{{ a.image }}" alt="{{ a.title }}" class="announcement-media-img" loading="lazy">
+                        <span class="img-zoom-hint"><i data-lucide="maximize-2" style="width:13px;height:13px;"></i> View full</span>
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="announcement-card-footer">
+                    <span class="author-tag">
+                        <i data-lucide="shield-check" style="width:14px;height:14px;color:var(--primary);"></i>
+                        Posted by <strong>{{ a.author_name|default:"Club Admin" }}</strong>
+                    </span>
+                    {% if a.updated_at and a.updated_at != a.created_at %}
+                    <span class="updated-tag">
+                        (edited {{ a.updated_at|date:"M d, h:i A" }})
+                    </span>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state-card">
+            <div class="empty-icon-wrap">
+                <i data-lucide="megaphone-off"></i>
+            </div>
+            <h3>No Announcements Yet</h3>
+            <p>{% if is_admin %}You haven't posted any announcements yet. Use the form above to post your first announcement for the team.{% else %}There are no active club announcements at the moment. Please check back later.{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if is_admin %}
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-ann-modal" style="display:none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3><i data-lucide="edit-3"></i> Edit Announcement</h3>
+            <button type="button" class="modal-close-btn" id="close-edit-modal">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <form method="post" id="edit-ann-form" enctype="multipart/form-data" action="">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom:14px;">
+                <label for="edit_title">Title *</label>
+                <input type="text" id="edit_title" name="title" required>
+            </div>
+            <div class="form-group" style="margin-bottom:14px;">
+                <label for="edit_category">Category</label>
+                <select id="edit_category" name="category">
+                    <option value="General">📢 General Notice</option>
+                    <option value="Urgent">⚠️ Urgent / Important</option>
+                    <option value="Giveaway">🎁 Giveaway</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:14px;">
+                <label for="edit_content">Message *</label>
+                <textarea id="edit_content" name="content" rows="4" required></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom:18px;">
+                <label>
+                    <i data-lucide="image" style="width:14px;height:14px;vertical-align:-2px;color:var(--primary);"></i>
+                    Attach / Replace Image <span style="font-size:12px; font-weight:normal; color:var(--gray-500);">(Optional)</span>
+                </label>
+                <div class="dropzone-box" style="padding:16px;">
+                    <input type="file" id="edit_image" name="image" accept="image/*" class="dropzone-input">
+                    <div class="dropzone-prompt">
+                        <div class="dropzone-icon" style="width:40px;height:40px;">
+                            <i data-lucide="upload-cloud" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div class="dropzone-text">
+                            <strong>Choose new image</strong> or drag and drop
+                            <small>JPG, PNG, or WebP</small>
+                        </div>
+                    </div>
+                    <div class="dropzone-preview" style="display:none;">
+                        <img src="" alt="Preview" class="dropzone-preview-img" style="max-height:120px;">
+                        <div class="dropzone-preview-info">
+                            <span class="dropzone-file-name"></span>
+                            <button type="button" class="dropzone-clear-btn">
+                                <i data-lucide="x" style="width:12px;height:12px;"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="edit_image_status" style="display:none; margin-top:8px; font-size:13px; color:var(--gray-600); align-items:center;">
+                    <span style="display:inline-flex; align-items:center; gap:4px; color:var(--primary); font-weight:600;">
+                        <i data-lucide="check" style="width:14px;height:14px;"></i> Current Image Attached
+                    </span>
+                    <label style="display:inline-flex; align-items:center; gap:5px; margin-left:14px; cursor:pointer; color:var(--danger); font-size:12px; font-weight:600;">
+                        <input type="checkbox" name="remove_image" value="1" id="remove_image_check"> Remove current image
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="btn btn-secondary" id="cancel-edit-btn">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i data-lucide="check"></i> Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editModal = document.getElementById('edit-ann-modal');
+    const editForm = document.getElementById('edit-ann-form');
+    const editTitle = document.getElementById('edit_title');
+    const editCategory = document.getElementById('edit_category');
+    const editContent = document.getElementById('edit_content');
+    const editImage = document.getElementById('edit_image');
+    const editImageStatus = document.getElementById('edit_image_status');
+    const removeImageCheck = document.getElementById('remove_image_check');
+    const closeBtn = document.getElementById('close-edit-modal');
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+
+    document.querySelectorAll('.edit-ann-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const annId = this.dataset.id;
+            editTitle.value = this.dataset.title;
+            editCategory.value = this.dataset.category;
+            editContent.value = this.dataset.content;
+            editForm.action = `/announcements/${annId}/edit/`;
+
+            if (editImage) editImage.value = '';
+            if (removeImageCheck) removeImageCheck.checked = false;
+
+            if (this.dataset.image) {
+                editImageStatus.style.display = 'flex';
+            } else {
+                editImageStatus.style.display = 'none';
+            }
+
+            editModal.style.display = 'flex';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+    });
+
+    function closeModal() {
+        editModal.style.display = 'none';
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (editModal) {
+        editModal.addEventListener('click', function(e) {
+            if (e.target === editModal) closeModal();
+        });
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
+
