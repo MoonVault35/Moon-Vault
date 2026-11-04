@@ -3,12 +3,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0284c7">
     <title>MoonVault - Gaming Management</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}?v=4.0">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="landing-page">
@@ -122,9 +123,18 @@
         lucide.createIcons();
         const navToggle = document.getElementById('nav-mobile-toggle');
         const navLinks = document.getElementById('nav-links');
-        if (navToggle) {
-            navToggle.addEventListener('click', () => {
+        if (navToggle && navLinks) {
+            navToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
                 navLinks.classList.toggle('nav-open');
+            });
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => navLinks.classList.remove('nav-open'));
+            });
+            document.addEventListener('click', (e) => {
+                if (!navLinks.contains(e.target) && e.target !== navToggle && !navToggle.contains(e.target)) {
+                    navLinks.classList.remove('nav-open');
+                }
             });
         }
     </script>

@@ -3,31 +3,77 @@
    ═══════════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', function () {
-    // ─── Sidebar Toggle ──────────────────────────────────
+    // ─── Sidebar Toggle (Mobile & Tablet) ────────────────
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.getElementById('sidebar');
     const sidebarClose = document.getElementById('sidebar-close');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
 
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', function () {
-            sidebar.classList.add('open');
-        });
+    function openSidebar() {
+        if (sidebar) sidebar.classList.add('open');
+        if (sidebarBackdrop) sidebarBackdrop.classList.add('active');
+        document.body.classList.add('sidebar-locked');
     }
 
-    if (sidebarClose && sidebar) {
-        sidebarClose.addEventListener('click', function () {
-            sidebar.classList.remove('open');
-        });
+    function closeSidebar() {
+        if (sidebar) sidebar.classList.remove('open');
+        if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+        document.body.classList.remove('sidebar-locked');
     }
 
-    // Close sidebar on outside click (mobile)
-    document.addEventListener('click', function (e) {
-        if (sidebar && sidebar.classList.contains('open')) {
-            if (!sidebar.contains(e.target) && e.target !== menuToggle && !menuToggle.contains(e.target)) {
-                sidebar.classList.remove('open');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (sidebar && sidebar.classList.contains('open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
             }
+        });
+    }
+
+    if (sidebarClose) {
+        sidebarClose.addEventListener('click', function (e) {
+            e.stopPropagation();
+            closeSidebar();
+        });
+    }
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', closeSidebar);
+        sidebarBackdrop.addEventListener('touchstart', closeSidebar, { passive: true });
+    }
+
+    // Close on escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
+            closeSidebar();
         }
     });
+
+    // ─── Landing Page Mobile Nav Toggle ──────────────────
+    const navMobileToggle = document.getElementById('nav-mobile-toggle');
+    const navLinks = document.getElementById('nav-links');
+    if (navMobileToggle && navLinks) {
+        navMobileToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            navLinks.classList.toggle('nav-open');
+        });
+
+        // Close landing nav when clicking any link
+        navLinks.querySelectorAll('a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                navLinks.classList.remove('nav-open');
+            });
+        });
+
+        // Close on outside click
+        document.addEventListener('click', function (e) {
+            if (!navLinks.contains(e.target) && e.target !== navMobileToggle && !navMobileToggle.contains(e.target)) {
+                navLinks.classList.remove('nav-open');
+            }
+        });
+    }
 
     // ─── Auto-dismiss alerts ─────────────────────────────
     const alerts = document.querySelectorAll('[data-alert]');

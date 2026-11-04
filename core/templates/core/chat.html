@@ -4,11 +4,11 @@
 {% block title %}Chat - MoonVault FC{% endblock %}
 {% block page_title %}Team Chat{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/chat.css' %}?v=3.1">
+<link rel="stylesheet" href="{% static 'core/css/chat.css' %}?v=4.0">
 {% endblock %}
 
 {% block content %}
-<div class="chat-container">
+<div class="chat-container {% if is_admin %}{% if active_player %}has-active-chat{% else %}no-active-chat{% endif %}{% else %}is-player-chat{% endif %}">
     {% if is_admin %}
     <!-- Admin Chat Sidebar -->
     <div class="chat-sidebar" id="chat-sidebar">
@@ -311,5 +311,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'core/js/chat.js' %}?v=3.1"></script>
+<script src="{% static 'core/js/chat.js' %}?v=4.0"></script>
 {% endblock %}
