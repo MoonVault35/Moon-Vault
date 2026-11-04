@@ -8,7 +8,13 @@ def get_client():
     """Get or create the MongoDB client (singleton)."""
     global _client
     if _client is None:
-        _client = pymongo.MongoClient(settings.MONGODB_URI)
+        client_kwargs = {}
+        try:
+            import certifi
+            client_kwargs['tlsCAFile'] = certifi.where()
+        except ImportError:
+            pass
+        _client = pymongo.MongoClient(settings.MONGODB_URI, **client_kwargs)
     return _client
 
 
