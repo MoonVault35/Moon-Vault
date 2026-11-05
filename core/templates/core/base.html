@@ -236,25 +236,6 @@
             </button>
         </nav>
     </div>
-
-            {% if messages %}
-            <div class="alerts-container">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}" data-alert>
-                    <span>{{ message }}</span>
-                    <button class="alert-close" onclick="this.parentElement.remove()">
-                        <i data-lucide="x" style="width:16px;height:16px;"></i>
-                    </button>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <div class="content-area">
-                {% block content %}{% endblock %}
-            </div>
-        </main>
-    </div>
     {% else %}
         {% block public_content %}{% endblock %}
     {% endif %}
