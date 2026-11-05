@@ -32,6 +32,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const bottomNavMenuBtn = document.getElementById('bottom-nav-menu-btn');
+    if (bottomNavMenuBtn) {
+        bottomNavMenuBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (sidebar && sidebar.classList.contains('open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+    }
+
     if (sidebarClose) {
         sidebarClose.addEventListener('click', function (e) {
             e.stopPropagation();
