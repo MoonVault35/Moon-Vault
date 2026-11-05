@@ -76,10 +76,36 @@
                 </button>
                 <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
                 <div class="topbar-right">
-                    <button type="button" class="topbar-bell-btn" id="topbar-notification-toggle" title="Enable notifications">
-                        <i data-lucide="bell"></i>
-                        <span class="bell-dot" id="bell-dot"></span>
-                    </button>
+                    <div class="topbar-notification-wrap" id="topbar-notif-wrap">
+                        <button type="button" class="topbar-bell-btn" id="topbar-notification-toggle" title="Notifications" aria-label="Notifications" aria-expanded="false">
+                            <i data-lucide="bell"></i>
+                            <span class="bell-dot" id="bell-dot"></span>
+                        </button>
+                        <div class="notification-dropdown" id="notification-dropdown" style="display: none;">
+                            <div class="notif-dropdown-header">
+                                <div class="notif-header-title">
+                                    <i data-lucide="bell-ring" style="width:16px;height:16px;"></i>
+                                    <span>Notifications</span>
+                                </div>
+                                <button type="button" class="notif-push-toggle-btn" id="notif-push-toggle-btn" title="Toggle phone notifications">
+                                    <span class="notif-toggle-dot" id="notif-toggle-dot"></span>
+                                    <span class="notif-toggle-text" id="notif-toggle-text">Phone Alerts: Off</span>
+                                </button>
+                            </div>
+                            <div class="notif-dropdown-body" id="notif-dropdown-body">
+                                <div class="notif-loading">
+                                    <div class="spinner-sm"></div>
+                                    <span>Checking updates...</span>
+                                </div>
+                            </div>
+                            <div class="notif-dropdown-footer">
+                                <a href="{% url 'announcements' %}" class="notif-view-all">
+                                    <span>View Announcements</span>
+                                    <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     <span class="user-info">
                         <i data-lucide="user"></i>
                         <span class="user-name-text">{{ full_name|default:username }}</span>

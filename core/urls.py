@@ -48,4 +48,5 @@ urlpatterns = [
     path('sw.js', views.service_worker, name='service_worker'),
     path('api/save-subscription/', views.save_push_subscription, name='save_push_subscription'),
     path('api/unsubscribe-push/', views.unsubscribe_push, name='unsubscribe_push'),
+    path('api/recent-notifications/', views.recent_notifications, name='recent_notifications'),
 ]

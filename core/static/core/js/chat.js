@@ -279,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             title: '💬 New Message',
                             body: data.message || 'Sent a photo',
                             url: '/chat/?player=' + data.sender_id,
+                            type: 'chat',
                             sound: true
                         });
                     }

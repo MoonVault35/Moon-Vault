@@ -14,7 +14,7 @@ except ImportError:
     logger.warning("pywebpush not installed. Web push notifications will be simulated.")
 
 
-def send_web_push(user_id, title, body, url='/', image=None, tag='moonvault'):
+def send_web_push(user_id, title, body, url='/', image=None, tag='moonvault', notif_type='chat'):
     """
     Send Web Push notification to all active devices of a given user.
     Pops up in the user's phone notification bar (Android / iOS / Windows / Mac).
@@ -31,13 +31,29 @@ def send_web_push(user_id, title, body, url='/', image=None, tag='moonvault'):
         if not PYWEBPUSH_AVAILABLE or not vapid_private_key:
             return 0
 
+        # Vibration & interactive action buttons based on type
+        if notif_type == 'announcement':
+            vibrate_pattern = [100, 50, 100, 50, 300]
+            actions = [
+                {'action': 'view', 'title': '📢 View Post'},
+                {'action': 'dismiss', 'title': '✖ Dismiss'}
+            ]
+        else:
+            vibrate_pattern = [80, 50, 80]
+            actions = [
+                {'action': 'reply', 'title': '💬 Reply'}
+            ]
+
         payload = {
             'title': title,
             'body': body,
             'url': url,
             'tag': tag,
+            'type': notif_type,
             'icon': '/static/core/images/logo-192.png',
             'badge': '/static/core/images/badge-72.png',
+            'vibrate': vibrate_pattern,
+            'actions': actions,
         }
         if image:
             # Ensure full url or media path
@@ -96,7 +112,8 @@ def notify_all_players(title, body, url='/announcements/', image=None, tag='anno
                 body=body,
                 url=url,
                 image=image,
-                tag=tag
+                tag=tag,
+                notif_type='announcement'
             )
         return total_sent
     except Exception as e:

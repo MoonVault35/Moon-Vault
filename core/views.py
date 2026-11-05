@@ -1091,3 +1091,62 @@ def unsubscribe_push(request):
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required_custom
+def recent_notifications(request):
+    """Return JSON with recent announcements and unread messages for the notification tray."""
+    try:
+        db = get_db()
+        user_id = str(request.session.get('user_id'))
+
+        # Latest 3 announcements
+        announcements_cursor = db.announcements.find().sort('created_at', -1).limit(3)
+        announcements = []
+        for a in announcements_cursor:
+            created = a.get('created_at')
+            time_str = created.strftime('%b %d, %I:%M %p') if isinstance(created, datetime) else 'Recent'
+            announcements.append({
+                'id': str(a.get('_id', '')),
+                'title': a.get('title', 'Announcement'),
+                'content': (a.get('content', '')[:90] + '...') if len(a.get('content', '')) > 90 else a.get('content', ''),
+                'time': time_str,
+                'image': a.get('image') or None,
+            })
+
+        # Recent unread messages
+        unread_cursor = db.messages.find({
+            'receiver_id': user_id,
+            'is_read': False
+        }).sort('timestamp', -1).limit(3)
+
+        unread_messages = []
+        for m in unread_cursor:
+            ts = m.get('timestamp')
+            time_str = ts.strftime('%I:%M %p') if isinstance(ts, datetime) else 'Recent'
+            sender = None
+            sender_id_val = m.get('sender_id')
+            if sender_id_val and ObjectId.is_valid(sender_id_val):
+                sender = db.users.find_one({'_id': ObjectId(sender_id_val)})
+            sender_name = sender.get('full_name') if sender else 'Club Desk'
+            unread_messages.append({
+                'sender_id': sender_id_val,
+                'sender_name': sender_name,
+                'message': m.get('message') or 'Sent a photo',
+                'time': time_str,
+            })
+
+        # Total unread message count
+        unread_total = db.messages.count_documents({
+            'receiver_id': user_id,
+            'is_read': False
+        })
+
+        return JsonResponse({
+            'success': True,
+            'announcements': announcements,
+            'unread_messages': unread_messages,
+            'unread_total': unread_total
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

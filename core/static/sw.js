@@ -33,9 +33,15 @@ self.addEventListener('push', function (event) {
         },
         tag: data.tag || 'moonvault-notification',
         renotify: true,
-        vibrate: [200, 100, 200],
+        vibrate: data.vibrate || [200, 100, 200],
+        actions: data.actions || [],
         requireInteraction: false
     };
+
+    // Update app badge if supported
+    if ('setAppBadge' in navigator) {
+        navigator.setAppBadge().catch(() => {});
+    }
 
     event.waitUntil(
         self.registration.showNotification(title, options)
@@ -45,6 +51,16 @@ self.addEventListener('push', function (event) {
 // ─── Handle Notification Click / Tap ───────────────────────
 self.addEventListener('notificationclick', function (event) {
     event.notification.close();
+
+    // Clear app badge counter on interaction
+    if ('clearAppBadge' in navigator) {
+        navigator.clearAppBadge().catch(() => {});
+    }
+
+    // If user clicked the "Dismiss" action button, exit early
+    if (event.action === 'dismiss') {
+        return;
+    }
 
     const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : '/';
 
