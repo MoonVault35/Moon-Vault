@@ -2221,11 +2221,20 @@ body.sidebar-locked {
         height: 100% !important;
         height: 100dvh !important;
         overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    body.page-chat .top-navbar {
+        flex: 0 0 56px !important;
+        height: 56px !important;
     }
 
     body.page-chat .main-content {
+        flex: 1 1 auto !important;
         height: calc(100dvh - 56px - 60px) !important;
         max-height: calc(100dvh - 56px - 60px) !important;
+        min-height: 0 !important;
         overflow: hidden !important;
         display: flex !important;
         flex-direction: column !important;
@@ -2241,6 +2250,7 @@ body.sidebar-locked {
         flex: 1 1 auto !important;
         height: 100% !important;
         max-height: 100% !important;
+        min-height: 0 !important;
         padding: 0 !important;
         margin: 0 !important;
         overflow: hidden !important;
@@ -2249,50 +2259,67 @@ body.sidebar-locked {
     }
 
     body.page-chat .chat-container {
+        flex: 1 1 auto !important;
         height: 100% !important;
         max-height: 100% !important;
+        min-height: 0 !important;
         border-radius: 0 !important;
-        border-left: none !important;
-        border-right: none !important;
-        border-bottom: none !important;
+        border: none !important;
         box-shadow: none !important;
         margin: 0 !important;
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;
+        width: 100% !important;
     }
 
     body.page-chat .chat-main {
+        flex: 1 1 auto !important;
         height: 100% !important;
         max-height: 100% !important;
+        min-height: 0 !important;
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;
-        flex: 1 1 auto !important;
+        position: relative !important;
+        background: #ffffff !important;
     }
 
     body.page-chat .chat-header {
-        flex-shrink: 0 !important;
-        padding: 8px 12px !important;
-        min-height: 50px !important;
+        flex: 0 0 auto !important;
+        padding: 10px 14px !important;
+        min-height: 52px !important;
         background: #ffffff !important;
-        border-bottom: 1px solid #f1f5f9 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        z-index: 5 !important;
     }
 
     body.page-chat .chat-messages {
-        flex: 1 1 0 !important;
+        flex: 1 1 auto !important;
         min-height: 0 !important;
+        height: auto !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        padding: 10px 12px !important;
+        padding: 14px 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        background: linear-gradient(180deg, #f0f7ff 0%, #f8fafc 100%) !important;
+    }
+
+    body.page-chat .chat-attachment-staging {
+        flex: 0 0 auto !important;
     }
 
     body.page-chat .chat-input-area {
-        flex-shrink: 0 !important;
+        flex: 0 0 auto !important;
+        position: relative !important;
+        width: 100% !important;
         padding: 8px 10px !important;
         background: #ffffff !important;
         border-top: 1px solid #e2e8f0 !important;
         z-index: 10 !important;
+        margin-top: auto !important;
     }
 
     .bottom-nav-item {
@@ -2486,6 +2513,10 @@ body.sidebar-locked {
 @media (max-width: 520px) {
     .content-area {
         padding: 12px 10px;
+    }
+
+    body.page-chat .content-area {
+        padding: 0 !important;
     }
 
     .topbar {

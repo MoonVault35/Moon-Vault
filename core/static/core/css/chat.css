@@ -909,20 +909,26 @@
     .chat-container {
         height: 100% !important;
         max-height: 100% !important;
+        min-height: 0 !important;
         border-radius: 0 !important;
         margin: 0 !important;
-        border-left: none !important;
-        border-right: none !important;
-        border-bottom: none !important;
+        border: none !important;
         box-shadow: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        width: 100% !important;
     }
 
     /* Admin View: Toggle between player list and conversation */
     .chat-container.no-active-chat .chat-sidebar {
         display: flex !important;
+        flex-direction: column !important;
         width: 100% !important;
-        border-right: none;
-        position: relative;
+        height: 100% !important;
+        min-height: 0 !important;
+        border-right: none !important;
+        position: relative !important;
     }
 
     .chat-container.no-active-chat .chat-main {
@@ -933,19 +939,23 @@
         display: none !important;
     }
 
-    .chat-container.has-active-chat .chat-main {
+    .chat-container.has-active-chat .chat-main,
+    .chat-container.is-player-chat .chat-main,
+    .chat-main {
         display: flex !important;
+        flex-direction: column !important;
         width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        flex: 1 1 auto !important;
+        overflow: hidden !important;
+        position: relative !important;
+        background: #ffffff !important;
     }
 
     /* Player View: Direct conversation takes full width */
     .chat-container.is-player-chat .chat-sidebar {
         display: none !important;
-    }
-
-    .chat-container.is-player-chat .chat-main {
-        display: flex !important;
-        width: 100% !important;
     }
 
     .chat-back-btn {
@@ -975,8 +985,13 @@
     }
 
     .chat-header {
-        padding: 10px 14px;
-        gap: 10px;
+        flex: 0 0 auto !important;
+        padding: 10px 14px !important;
+        gap: 10px !important;
+        min-height: 52px !important;
+        background: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        z-index: 5 !important;
     }
 
     .chat-header-avatar-wrap .avatar-sm {
@@ -998,8 +1013,16 @@
     }
 
     .chat-messages {
-        padding: 12px 10px;
-        gap: 10px;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        height: auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 14px 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        background: linear-gradient(180deg, #f0f7ff 0%, #f8fafc 100%) !important;
     }
 
     .chat-bubble {
@@ -1012,6 +1035,21 @@
     .chat-bubble-img {
         max-width: 190px;
         max-height: 170px;
+    }
+
+    .chat-attachment-staging {
+        flex: 0 0 auto !important;
+    }
+
+    .chat-input-area {
+        flex: 0 0 auto !important;
+        position: relative !important;
+        width: 100% !important;
+        padding: 8px 10px !important;
+        background: #ffffff !important;
+        border-top: 1px solid #e2e8f0 !important;
+        z-index: 10 !important;
+        margin-top: auto !important;
     }
 
     .chat-input-bar {
@@ -1087,8 +1125,9 @@
         font-size: 13px;
     }
 
+    .chat-input-area,
     .chat-input-bar {
-        padding: 6px 8px;
+        padding: 6px 8px !important;
         gap: 4px;
     }
 

@@ -428,8 +428,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // ─── Mobile Viewport & Keyboard Adjustment ───────────────
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', function () {
+            scrollToBottom(true);
+        });
+    }
+
     // ─── Initialize ──────────────────────────────────────────
     scrollToBottom();
+    // Re-scroll after fonts and layout settle
+    setTimeout(() => scrollToBottom(), 100);
+    setTimeout(() => scrollToBottom(), 350);
     connectWebSocket();
     setTimeout(() => {
         if (!wsConnected) startPolling();
