@@ -16,7 +16,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     {% block extra_css %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
+<body class="{% block body_class %}{% endblock %}" data-vapid-key="{{ vapid_public_key }}">
     {% if is_authenticated %}
     <div class="app-layout">
         <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
@@ -76,6 +76,10 @@
                 </button>
                 <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
                 <div class="topbar-right">
+                    <button type="button" class="topbar-bell-btn" id="topbar-notification-toggle" title="Enable notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="bell-dot" id="bell-dot"></span>
+                    </button>
                     <span class="user-info">
                         <i data-lucide="user"></i>
                         <span class="user-name-text">{{ full_name|default:username }}</span>
@@ -109,6 +113,7 @@
     {% endif %}
 
     <script src="{% static 'core/js/main.js' %}?v=4.0"></script>
+    <script src="{% static 'core/js/notifications.js' %}?v=4.0"></script>
     {% block extra_js %}{% endblock %}
     <script>
         if (typeof lucide !== 'undefined') { lucide.createIcons(); }

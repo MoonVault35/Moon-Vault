@@ -1,3 +1,4 @@
+from django.conf import settings
 from .db import get_db
 
 
@@ -11,6 +12,7 @@ def global_context(request):
         'is_authenticated': 'user_id' in request.session,
         'is_admin': request.session.get('role') == 'admin',
         'is_player': request.session.get('role') == 'player',
+        'vapid_public_key': getattr(settings, 'VAPID_PUBLIC_KEY', ''),
     }
 
     # Get unread message count

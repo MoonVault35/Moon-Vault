@@ -103,3 +103,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CSRF & Session Security
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
+
+# Web Push Notifications (VAPID)
+VAPID_PUBLIC_KEY = os.getenv(
+    'VAPID_PUBLIC_KEY',
+    'BCGSCgA5vuyeU-SsOgoCh9LeuuYjghQSIhrPKwNCoS3Ut4z3_gF2sr1TDvaNc_Jge0nlOgM6TnQ4Xhqn2XP_O-Y'
+)
+VAPID_PRIVATE_KEY = os.getenv(
+    'VAPID_PRIVATE_KEY',
+    'tko037QrLdPxMtFQgAiHFWHCEd4FVopSr5ZNEW8JiZc'
+)
+VAPID_CLAIMS = {
+    'sub': os.getenv('VAPID_ADMIN_EMAIL', 'mailto:admin@moonvaultfc.com')
+}

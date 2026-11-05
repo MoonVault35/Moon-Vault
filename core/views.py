@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from bson import ObjectId
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password, check_password
 from django.views.decorators.http import require_POST
@@ -580,6 +580,23 @@ def chat_send(request):
     except Exception as e:
         pass
 
+    # Send Web Push notification to receiver's phone / desktop
+    try:
+        from .notifications import send_web_push
+        sender_display_name = request.session.get('full_name') or request.session.get('username') or 'Club Member'
+        chat_target_url = '/chat/' if role == 'player' else f"/chat/?player={user_id}"
+        push_body = message_text if message_text else "📷 Sent a photo attachment"
+        send_web_push(
+            user_id=receiver_id,
+            title=f"💬 {sender_display_name}",
+            body=push_body,
+            url=chat_target_url,
+            image=image_path if image_path else None,
+            tag=f"chat-{user_id}"
+        )
+    except Exception as e:
+        pass
+
     return JsonResponse({
         'success': True,
         'message': {
@@ -891,6 +908,19 @@ def announcement_add(request):
         'updated_at': now,
     })
 
+    # Trigger Web Push notification to all players' devices
+    try:
+        from .notifications import notify_all_players
+        notify_all_players(
+            title=f"📢 {title}",
+            body=content[:120] + ('...' if len(content) > 120 else ''),
+            url='/announcements/',
+            image=image_path if image_path else None,
+            tag='announcement'
+        )
+    except Exception as e:
+        pass
+
     messages.success(request, f'Announcement "{title}" posted successfully! ({today_count + 1}/4 posted today)')
     return redirect('announcements')
 
@@ -997,3 +1027,67 @@ def announcement_delete(request, announcement_id):
 @login_required_custom
 def change_password(request):
     return redirect('home')
+
+
+# ─── Web Push & Service Worker Views ───────────────────────
+
+def service_worker(request):
+    """Serve sw.js from root with root scope permission."""
+    sw_path = os.path.join(settings.BASE_DIR, 'core', 'static', 'sw.js')
+    try:
+        with open(sw_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except Exception:
+        content = "/* sw.js */"
+    response = HttpResponse(content, content_type='application/javascript')
+    response['Service-Worker-Allowed'] = '/'
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return response
+
+
+@login_required_custom
+@require_POST
+def save_push_subscription(request):
+    """Save or update a client's Web Push subscription."""
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        subscription = data.get('subscription')
+        if not subscription or not subscription.get('endpoint'):
+            return JsonResponse({'success': False, 'error': 'Invalid subscription'}, status=400)
+
+        db = get_db()
+        user_id = str(request.session.get('user_id'))
+        role = request.session.get('role', 'player')
+
+        db.push_subscriptions.update_one(
+            {'endpoint': subscription['endpoint']},
+            {
+                '$set': {
+                    'endpoint': subscription['endpoint'],
+                    'subscription': subscription,
+                    'user_id': user_id,
+                    'role': role,
+                    'user_agent': request.META.get('HTTP_USER_AGENT', ''),
+                    'updated_at': datetime.utcnow()
+                }
+            },
+            upsert=True
+        )
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required_custom
+@require_POST
+def unsubscribe_push(request):
+    """Remove a Web Push subscription."""
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        endpoint = data.get('endpoint')
+        if endpoint:
+            db = get_db()
+            db.push_subscriptions.delete_many({'endpoint': endpoint})
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

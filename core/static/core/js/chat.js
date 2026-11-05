@@ -272,6 +272,16 @@ document.addEventListener('DOMContentLoaded', function () {
                         method: 'POST',
                         headers: { 'X-CSRFToken': getCsrfToken() }
                     }).catch(() => {});
+                } else if (data.type === 'received' && data.sender_id !== receiverId) {
+                    // Message from a different conversation — show toast
+                    if (typeof window.showWebToast === 'function') {
+                        window.showWebToast({
+                            title: '💬 New Message',
+                            body: data.message || 'Sent a photo',
+                            url: '/chat/?player=' + data.sender_id,
+                            sound: true
+                        });
+                    }
                 } else if (data.type === 'sent') {
                     // Confirmed via WebSocket
                 }
