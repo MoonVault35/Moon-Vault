@@ -907,10 +907,14 @@
 /* ─── Mobile Phones (< 768px) ─────────────────────────────── */
 @media (max-width: 768px) {
     .chat-container {
-        height: calc(100vh - var(--topbar-height) - 16px);
-        height: calc(100dvh - 56px - 16px);
-        border-radius: 14px;
-        margin: 0;
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        box-shadow: none !important;
     }
 
     /* Admin View: Toggle between player list and conversation */

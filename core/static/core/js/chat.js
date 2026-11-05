@@ -208,6 +208,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (messageInput) {
         messageInput.addEventListener('input', updateSendButtonState);
+        messageInput.addEventListener('focus', function () {
+            setTimeout(() => scrollToBottom(true), 300);
+        });
     }
 
     // ─── Render Message Bubble ───────────────────────────────

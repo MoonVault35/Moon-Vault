@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}?v=4.0">
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}?v=6.0">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="login-page">
@@ -36,16 +36,21 @@
                         <i data-lucide="user" style="width:16px;height:16px;"></i>
                         Username or Player ID
                     </label>
-                    <input type="text" id="username" name="username" required autofocus placeholder="Enter your username or player ID">
+                    <input type="text" id="username" name="username" required autofocus placeholder="Enter username or player ID" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="text">
                 </div>
                 <div class="form-group">
                     <label for="password">
                         <i data-lucide="lock" style="width:16px;height:16px;"></i>
                         Password
                     </label>
-                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                    <div class="password-input-wrap">
+                        <input type="password" id="password" name="password" required placeholder="Enter your password" autocomplete="current-password">
+                        <button type="button" class="password-toggle-btn" id="password-toggle-btn" title="Show or hide password" aria-label="Toggle password visibility">
+                            <i data-lucide="eye" id="eye-icon"></i>
+                        </button>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-full">
+                <button type="submit" class="btn btn-primary btn-full login-submit-btn">
                     <i data-lucide="log-in"></i>
                     Sign In
                 </button>
@@ -59,7 +64,20 @@
             </div>
         </div>
     </div>
-    <script>lucide.createIcons();</script>
+    <script>
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        const passInput = document.getElementById('password');
+        const passToggle = document.getElementById('password-toggle-btn');
+        const eyeIcon = document.getElementById('eye-icon');
+        if (passToggle && passInput) {
+            passToggle.addEventListener('click', function () {
+                const isPass = passInput.type === 'password';
+                passInput.type = isPass ? 'text' : 'password';
+                passToggle.innerHTML = isPass ? '<i data-lucide="eye-off"></i>' : '<i data-lucide="eye"></i>';
+                if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+            });
+        }
+    </script>
 </body>
 </html>
 
