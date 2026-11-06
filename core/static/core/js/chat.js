@@ -209,7 +209,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (messageInput) {
         messageInput.addEventListener('input', updateSendButtonState);
         messageInput.addEventListener('focus', function () {
-            setTimeout(() => scrollToBottom(true), 300);
+            document.body.classList.add('keyboard-open');
+            setTimeout(() => scrollToBottom(true), 150);
+            setTimeout(() => scrollToBottom(true), 350);
+        });
+        messageInput.addEventListener('blur', function () {
+            document.body.classList.remove('keyboard-open');
+            setTimeout(() => scrollToBottom(true), 150);
         });
     }
 
@@ -431,6 +437,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // ─── Mobile Viewport & Keyboard Adjustment ───────────────
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', function () {
+            if (document.activeElement === messageInput) {
+                document.body.classList.add('keyboard-open');
+            }
             scrollToBottom(true);
         });
     }
