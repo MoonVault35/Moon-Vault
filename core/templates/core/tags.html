@@ -11,24 +11,25 @@
     <div class="payment-hero-banner">
         <div class="payment-hero-info">
             <span class="payment-hero-tag">
-                <i data-lucide="shield-check" style="width:13px;height:13px;"></i> Official Club Accounts
+                <i data-lucide="shield-check" style="width:13px;height:13px;"></i> Official Club Channels
             </span>
             <h1 class="payment-hero-title">
-                MoonVault FC Payment Methods
+                MoonVault Payment Methods
             </h1>
             <p class="payment-hero-desc">
-                Select your preferred payment channel below to scan official club QR codes or copy verified account numbers for membership fees, jerseys, and club dues.
+                Select your preferred payment channel below to scan official QR codes or copy verified tags and account details.
             </p>
         </div>
 
         {% if not is_admin %}
         <div class="player-id-highlight-box">
-            <span class="player-id-label">Your Remarks Player ID</span>
-            <button type="button" class="player-id-pill-btn" data-copy="{{ request.session.username|upper }}" title="Click to copy your Player ID for payment remarks">
+            <span class="player-id-label">Player Account</span>
+            <button type="button" class="player-id-pill-btn" data-copy="{{ username|upper }}"
+                title="Click to copy your Player ID">
                 <i data-lucide="copy" style="width:14px;height:14px;"></i>
-                <span>{{ request.session.username|upper }}</span>
+                <span>{{ username|upper }}</span>
             </button>
-            <span style="font-size:10.5px;color:#94a3b8;margin-top:2px;">Click to copy for remarks</span>
+            <span style="font-size:10.5px;color:#94a3b8;margin-top:2px;">Click to copy Player ID</span>
         </div>
         {% endif %}
     </div>
@@ -40,7 +41,7 @@
             <i data-lucide="info"></i>
         </div>
         <div class="payment-notice-text">
-            <strong>Important Transfer Note:</strong> When paying via eSewa, Khalti, Fonepay, or Mobile Banking, please always mention your Player ID (<strong>{{ request.session.username|upper }}</strong>) in the remarks/remarks note so club management can verify your deposit instantly.
+            <strong>Important Transfer Note:</strong> When paying via Cash App, Chime, PayPal, Venmo, or Bank, please verify the payment tag or QR code carefully. Always follow the specific remarks note shown on each payment card (or confirm in the Team Chat if you have questions) so your payment can be verified immediately.
         </div>
     </div>
     {% endif %}
@@ -56,20 +57,24 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label for="method_name">Payment Method Name *</label>
-                    <input type="text" id="method_name" name="method_name" required placeholder="e.g. eSewa, Khalti, Fonepay, Nabil Bank">
+                    <input type="text" id="method_name" name="method_name" required
+                        placeholder="e.g. Cash App, Chime, PayPal, Venmo, Zelle, Bank Transfer">
                 </div>
                 <div class="form-group">
-                    <label for="account_name">Account Holder Name</label>
-                    <input type="text" id="account_name" name="account_name" placeholder="e.g. MoonVault Football Club">
+                    <label for="account_name">Account Tag / $Cashtag / Name *</label>
+                    <input type="text" id="account_name" name="account_name" placeholder="e.g. $LuisEspinosa83, $David-andrew-Garcia">
                 </div>
                 <div class="form-group">
-                    <label for="account_number">Account Number / Phone / Wallet ID</label>
-                    <input type="text" id="account_number" name="account_number" placeholder="e.g. 9801234567 or Bank A/C Number">
+                    <label for="account_number">Account Number / Phone / ID (Optional)</label>
+                    <input type="text" id="account_number" name="account_number"
+                        placeholder="e.g. 9801234567 or Bank A/C #">
                 </div>
                 <div class="form-group form-group-full">
                     <label>
-                        <i data-lucide="qr-code" style="width:14px;height:14px;vertical-align:-2px;color:var(--primary);"></i>
-                        Payment QR Code Image <span style="font-size:12px; font-weight:normal; color:var(--gray-500);">(High resolution JPG, PNG, or WebP)</span>
+                        <i data-lucide="qr-code"
+                            style="width:14px;height:14px;vertical-align:-2px;color:var(--primary);"></i>
+                        Payment QR Code Image <span
+                            style="font-size:12px; font-weight:normal; color:var(--gray-500);">(High resolution JPG, PNG, or WebP)</span>
                     </label>
                     <div class="dropzone-box" style="padding:18px;">
                         <input type="file" id="qr_image" name="qr_image" accept="image/*" class="dropzone-input">
@@ -94,8 +99,9 @@
                     </div>
                 </div>
                 <div class="form-group form-group-full">
-                    <label for="instructions">Instructions / Remarks Note</label>
-                    <input type="text" id="instructions" name="instructions" placeholder="e.g. Please put your Player ID in the transfer remarks/note">
+                    <label for="instructions">Instructions / Remarks for Players</label>
+                    <input type="text" id="instructions" name="instructions"
+                        placeholder="e.g. Kindly include remark as Food, Housing or Shopping.">
                 </div>
             </div>
             <div class="form-actions" style="margin-top:14px;padding-top:14px;border-top:1px solid #f1f5f9;">
@@ -113,28 +119,59 @@
             <h2 class="payment-section-heading">
                 <i data-lucide="credit-card"></i> Available Payment Options
             </h2>
-            <div class="payment-selection-status-badge" id="pm-selection-badge">
+            <div class="payment-selection-status-badge {% if payment_methods %}has-selection{% endif %}" id="pm-selection-badge">
+                {% if payment_methods %}
+                <i data-lucide="check-circle-2"></i> Selected: {{ payment_methods.0.method_name }}
+                {% else %}
                 <i data-lucide="mouse-pointer-click"></i> Click a card to select
+                {% endif %}
             </div>
         </div>
 
         {% if payment_methods %}
         <div class="payment-methods-grid" id="pm-cards-grid">
             {% for pm in payment_methods %}
-            <div class="payment-card-modern"
-                 data-id="{{ pm.id }}"
-                 data-method="{{ pm.method_name }}"
-                 data-account="{{ pm.account_name|default:'' }}"
-                 data-number="{{ pm.account_number|default:'' }}"
-                 data-qr="{% if pm.qr_image %}/media/{{ pm.qr_image }}{% endif %}"
-                 tabindex="0"
-                 role="radio"
-                 aria-checked="false">
+            <div class="payment-card-modern {% if forloop.first %}is-selected{% endif %}"
+                data-id="{{ pm.id }}"
+                data-method="{{ pm.method_name }}"
+                data-account="{{ pm.account_name|default:'' }}"
+                data-number="{{ pm.account_number|default:'' }}"
+                data-qr="{% if pm.qr_image %}/media/{{ pm.qr_image }}{% endif %}"
+                tabindex="0"
+                role="radio"
+                aria-checked="{% if forloop.first %}true{% else %}false{% endif %}">
+
+                <!-- Hidden Radio Input for Standard Form Compatibility -->
+                <input type="radio" name="selected_payment_method" value="{{ pm.id }}" class="pm-hidden-radio" style="display:none;" {% if forloop.first %}checked{% endif %}>
 
                 <!-- Card Header -->
                 <div class="pm-card-header">
                     <div class="pm-brand-wrap">
-                        {% if 'esewa' in pm.method_name|lower %}
+                        {% if 'cash' in pm.method_name|lower %}
+                        <div class="pm-brand-badge pm-brand-cashapp" title="Cash App">
+                            <i data-lucide="dollar-sign"></i>
+                        </div>
+                        {% elif 'chime' in pm.method_name|lower %}
+                        <div class="pm-brand-badge pm-brand-chime" title="Chime">
+                            <i data-lucide="circle-dollar-sign"></i>
+                        </div>
+                        {% elif 'paypal' in pm.method_name|lower %}
+                        <div class="pm-brand-badge pm-brand-paypal" title="PayPal">
+                            <i data-lucide="wallet"></i>
+                        </div>
+                        {% elif 'venmo' in pm.method_name|lower %}
+                        <div class="pm-brand-badge pm-brand-venmo" title="Venmo">
+                            <i data-lucide="send"></i>
+                        </div>
+                        {% elif 'zelle' in pm.method_name|lower %}
+                        <div class="pm-brand-badge pm-brand-zelle" title="Zelle">
+                            <i data-lucide="zap"></i>
+                        </div>
+                        {% elif 'apple' in pm.method_name|lower %}
+                        <div class="pm-brand-badge pm-brand-apple" title="Apple Pay">
+                            <i data-lucide="smartphone"></i>
+                        </div>
+                        {% elif 'esewa' in pm.method_name|lower %}
                         <div class="pm-brand-badge pm-brand-esewa" title="eSewa Digital Wallet">
                             <i data-lucide="wallet"></i>
                         </div>
@@ -161,6 +198,8 @@
                             <span class="pm-method-category">
                                 {% if pm.qr_image %}
                                 <i data-lucide="qr-code" style="width:11px;height:11px;color:#0284c7;"></i> QR Scan &amp; Pay
+                                {% elif 'cash' in pm.method_name|lower or 'venmo' in pm.method_name|lower or 'chime' in pm.method_name|lower %}
+                                <i data-lucide="at-sign" style="width:11px;height:11px;color:#0284c7;"></i> Tag / ID Transfer
                                 {% else %}
                                 <i data-lucide="arrow-right-left" style="width:11px;height:11px;color:#64748b;"></i> Direct Transfer
                                 {% endif %}
@@ -171,18 +210,19 @@
                     <div class="pm-header-actions">
                         {% if is_admin %}
                         <div class="pm-admin-actions" onclick="event.stopPropagation();">
-                            <button type="button" class="pm-admin-btn edit-pm-btn"
-                                    title="Edit payment method"
-                                    data-id="{{ pm.id }}"
-                                    data-name="{{ pm.method_name }}"
-                                    data-account="{{ pm.account_name|default:'' }}"
-                                    data-number="{{ pm.account_number|default:'' }}"
-                                    data-instructions="{{ pm.instructions|default:'' }}">
+                            <button type="button" class="pm-admin-btn edit-pm-btn" title="Edit payment method"
+                                data-id="{{ pm.id }}" data-name="{{ pm.method_name }}"
+                                data-account="{{ pm.account_name|default:'' }}"
+                                data-number="{{ pm.account_number|default:'' }}"
+                                data-instructions="{{ pm.instructions|default:'' }}">
                                 <i data-lucide="edit-2"></i>
                             </button>
-                            <form method="post" action="{% url 'payment_method_delete' pm.id %}" onsubmit="return confirm('Delete payment method {{ pm.method_name }}?');" style="margin:0;">
+                            <form method="post" action="{% url 'payment_method_delete' pm.id %}"
+                                onsubmit="return confirm('Delete this payment method?');"
+                                style="margin:0;">
                                 {% csrf_token %}
-                                <button type="submit" class="pm-admin-btn pm-admin-delete" title="Delete payment method">
+                                <button type="submit" class="pm-admin-btn pm-admin-delete"
+                                    title="Delete payment method">
                                     <i data-lucide="trash-2"></i>
                                 </button>
                             </form>
@@ -200,43 +240,61 @@
 
                 <!-- QR Code Box (Fixed Dimensions & object-fit: contain) -->
                 <div class="pm-qr-wrapper">
-                    <div class="pm-qr-box" onclick="event.stopPropagation(); openPmQrModal('{{ pm.method_name }}', '{{ pm.account_name|default:"" }}', '{% if pm.qr_image %}/media/{{ pm.qr_image }}{% endif %}')" title="Click to view enlarged QR code">
+                    <div class="pm-qr-box {% if pm.qr_image %}has-qr-image{% endif %}" title="{% if pm.qr_image %}Click to view enlarged QR code{% else %}Direct Tag Transfer{% endif %}">
                         {% if pm.qr_image %}
-                        <img src="/media/{{ pm.qr_image }}" alt="{{ pm.method_name }} QR Code" loading="lazy">
+                        <img src="/media/{{ pm.qr_image }}" alt="{{ pm.method_name }} QR Code" loading="lazy" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                        <div class="pm-qr-placeholder" style="display:none;">
+                            <i data-lucide="qr-code"></i>
+                            <span>{{ pm.method_name }} QR</span>
+                            <small style="color:#94a3b8;font-size:10.5px;">Click to view</small>
+                        </div>
                         {% else %}
                         <div class="pm-qr-placeholder">
-                            <i data-lucide="qr-code"></i>
-                            <span>No QR Code Uploaded</span>
-                            <small style="color:#94a3b8;font-size:10.5px;">Account Details Below</small>
+                            <i data-lucide="at-sign"></i>
+                            <span>Tag / Direct Transfer</span>
+                            <small style="color:#94a3b8;font-size:10.5px;">Copy tag details below</small>
                         </div>
                         {% endif %}
                     </div>
                     {% if pm.qr_image %}
-                    <span class="pm-qr-tap-hint" onclick="event.stopPropagation(); openPmQrModal('{{ pm.method_name }}', '{{ pm.account_name|default:"" }}', '/media/{{ pm.qr_image }}')">
+                    <span class="pm-qr-tap-hint">
                         <i data-lucide="maximize-2"></i> Click QR to enlarge
                     </span>
                     {% endif %}
                 </div>
 
-                <!-- Account Details -->
+                <!-- Account / Tag Details -->
                 <div class="pm-details-section">
                     {% if pm.account_name %}
                     <div class="pm-detail-item">
                         <span class="pm-detail-label">
-                            <i data-lucide="user"></i> Account Name
+                            <i data-lucide="at-sign"></i>
+                            {% if 'cash' in pm.method_name|lower %}Cashtag / Account Tag
+                            {% elif 'chime' in pm.method_name|lower %}Chime Tag / Username
+                            {% elif 'venmo' in pm.method_name|lower %}Venmo Tag
+                            {% elif 'paypal' in pm.method_name|lower %}PayPal Account / Tag
+                            {% else %}Account Tag / Name{% endif %}
                         </span>
-                        <strong class="pm-detail-account-name">{{ pm.account_name }}</strong>
+                        <div class="pm-number-row" onclick="event.stopPropagation();">
+                            <span class="pm-account-number-pill">{{ pm.account_name }}</span>
+                            <button type="button" class="pm-copy-button" data-copy="{{ pm.account_name }}"
+                                title="Copy tag to clipboard">
+                                <i data-lucide="copy"></i>
+                                <span>Copy Tag</span>
+                            </button>
+                        </div>
                     </div>
                     {% endif %}
 
                     {% if pm.account_number %}
                     <div class="pm-detail-item">
                         <span class="pm-detail-label">
-                            <i data-lucide="hash"></i> Account / Phone / ID
+                            <i data-lucide="hash"></i> Account / Phone Number
                         </span>
                         <div class="pm-number-row" onclick="event.stopPropagation();">
                             <span class="pm-account-number-pill">{{ pm.account_number }}</span>
-                            <button type="button" class="pm-copy-button" data-copy="{{ pm.account_number }}" title="Copy number to clipboard">
+                            <button type="button" class="pm-copy-button" data-copy="{{ pm.account_number }}"
+                                title="Copy number to clipboard">
                                 <i data-lucide="copy"></i>
                                 <span>Copy</span>
                             </button>
@@ -247,7 +305,7 @@
                     {% if pm.instructions %}
                     <div class="pm-instructions-block">
                         <i data-lucide="info"></i>
-                        <span><strong>Note:</strong> {{ pm.instructions }}</span>
+                        <span><strong>Remarks Note:</strong> {{ pm.instructions }}</span>
                     </div>
                     {% endif %}
                 </div>
@@ -282,7 +340,9 @@
     <div class="modal-overlay" id="edit-pm-modal" style="display:none;">
         <div class="modal" style="max-width:500px;border-radius:18px;">
             <div class="modal-header">
-                <h3><i data-lucide="edit-2" style="width:18px;height:18px;color:var(--primary);vertical-align:-3px;"></i> Edit Payment Method</h3>
+                <h3><i data-lucide="edit-2"
+                        style="width:18px;height:18px;color:var(--primary);vertical-align:-3px;"></i> Edit Payment
+                    Method</h3>
                 <button type="button" class="modal-close" id="close-pm-modal"><i data-lucide="x"></i></button>
             </div>
             <form id="edit-pm-form" method="post" enctype="multipart/form-data">
@@ -292,17 +352,19 @@
                     <input type="text" id="edit-pm-name" name="method_name" required>
                 </div>
                 <div class="form-group">
-                    <label for="edit-pm-account">Account Holder Name</label>
+                    <label for="edit-pm-account">Account Tag / $Cashtag / Name *</label>
                     <input type="text" id="edit-pm-account" name="account_name">
                 </div>
                 <div class="form-group">
-                    <label for="edit-pm-number">Account Number / Phone / ID</label>
+                    <label for="edit-pm-number">Account Number / Phone / ID (Optional)</label>
                     <input type="text" id="edit-pm-number" name="account_number">
                 </div>
                 <div class="form-group">
                     <label>
-                        <i data-lucide="qr-code" style="width:14px;height:14px;vertical-align:-2px;color:var(--primary);"></i>
-                        Replace QR Code Image <span style="font-size:12px; font-weight:normal; color:var(--gray-500);">(Optional)</span>
+                        <i data-lucide="qr-code"
+                            style="width:14px;height:14px;vertical-align:-2px;color:var(--primary);"></i>
+                        Replace QR Code Image <span
+                            style="font-size:12px; font-weight:normal; color:var(--gray-500);">(Optional)</span>
                     </label>
                     <div class="dropzone-box" style="padding:16px;">
                         <input type="file" name="qr_image" accept="image/*" class="dropzone-input">
@@ -327,7 +389,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="edit-pm-instructions">Instructions / Remarks</label>
+                    <label for="edit-pm-instructions">Remarks / Note for Players</label>
                     <input type="text" id="edit-pm-instructions" name="instructions">
                 </div>
                 <div class="form-actions" style="margin-top:16px;padding-top:14px;border-top:1px solid #f1f5f9;">
@@ -340,10 +402,10 @@
     {% endif %}
 
     <!-- Fullscreen QR Code Lightbox Modal -->
-    <div class="pm-lightbox" id="pm-qr-lightbox" style="display:none;" onclick="closePmQrModal()">
-        <div class="pm-lightbox-backdrop"></div>
+    <div class="pm-lightbox" id="pm-qr-lightbox" style="display:none;">
+        <div class="pm-lightbox-backdrop" id="pm-lightbox-backdrop"></div>
         <div class="pm-lightbox-content" onclick="event.stopPropagation();">
-            <button type="button" class="pm-lightbox-close" onclick="closePmQrModal()" title="Close viewer">
+            <button type="button" class="pm-lightbox-close" id="pm-lightbox-close-btn" title="Close viewer">
                 <i data-lucide="x"></i>
             </button>
             <div class="pm-lightbox-header">
@@ -354,10 +416,11 @@
                 <img src="" id="pm-lightbox-img" alt="Official QR Code">
             </div>
             <div class="pm-lightbox-footer">
-                <a href="" id="pm-lightbox-download" download="moonvault-qr.png" target="_blank" class="btn btn-primary">
+                <a href="" id="pm-lightbox-download" download="moonvault-qr.png" target="_blank"
+                    class="btn btn-primary">
                     <i data-lucide="download" style="width:15px;height:15px;"></i> Download QR
                 </a>
-                <button type="button" class="btn btn-ghost" onclick="closePmQrModal()">Close</button>
+                <button type="button" class="btn btn-ghost" id="pm-lightbox-cancel-btn">Close</button>
             </div>
         </div>
     </div>
@@ -368,6 +431,32 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+    // ─── Universal Clipboard Copy Helper with ExecCommand Fallback ─
+    function copyTextToClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text);
+        }
+        return new Promise(function (resolve, reject) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            textArea.style.top = '0';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) resolve();
+                else reject(new Error('execCommand copy failed'));
+            } catch (err) {
+                document.body.removeChild(textArea);
+                reject(err);
+            }
+        });
+    }
 
     // ─── Toast Notification Helper ────────────────────────────
     function showCopyToast(message) {
@@ -381,47 +470,46 @@ document.addEventListener('DOMContentLoaded', function () {
         toast.innerHTML = '<i data-lucide="check" style="width:16px;height:16px;color:#38bdf8;"></i> ' + message;
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        // Animate in
-        requestAnimationFrame(() => {
+        requestAnimationFrame(function () {
             toast.style.opacity = '1';
             toast.style.transform = 'translateX(-50%) translateY(0)';
         });
 
-        // Clear existing timer
         if (toast._timer) clearTimeout(toast._timer);
-        toast._timer = setTimeout(() => {
+        toast._timer = setTimeout(function () {
             toast.style.opacity = '0';
             toast.style.transform = 'translateX(-50%) translateY(15px)';
         }, 2200);
     }
 
     // ─── 1-Click Copy Handlers ────────────────────────────────
-    document.querySelectorAll('[data-copy]').forEach(btn => {
+    document.querySelectorAll('[data-copy]').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
             const text = this.getAttribute('data-copy');
             if (!text) return;
 
-            navigator.clipboard.writeText(text).then(() => {
-                const isPlayerId = this.classList.contains('player-id-pill-btn');
-                const originalHtml = this.innerHTML;
+            const self = this;
+            copyTextToClipboard(text).then(function () {
+                const isPlayerId = self.classList.contains('player-id-pill-btn');
+                const originalHtml = self.innerHTML;
 
-                this.classList.add('copied');
+                self.classList.add('copied');
                 if (isPlayerId) {
-                    this.innerHTML = '<i data-lucide="check" style="width:14px;height:14px;"></i> <span>Copied!</span>';
-                    showCopyToast('Player ID copied to clipboard!');
+                    self.innerHTML = '<i data-lucide="check" style="width:14px;height:14px;"></i> <span>Copied!</span>';
+                    showCopyToast('Player ID copied: ' + text);
                 } else {
-                    this.innerHTML = '<i data-lucide="check" style="width:13px;height:13px;"></i> <span>Copied!</span>';
-                    showCopyToast('Account number copied: ' + text);
+                    self.innerHTML = '<i data-lucide="check" style="width:13px;height:13px;"></i> <span>Copied!</span>';
+                    showCopyToast('Copied: ' + text);
                 }
                 if (typeof lucide !== 'undefined') lucide.createIcons();
 
-                setTimeout(() => {
-                    this.innerHTML = originalHtml;
-                    this.classList.remove('copied');
+                setTimeout(function () {
+                    self.innerHTML = originalHtml;
+                    self.classList.remove('copied');
                     if (typeof lucide !== 'undefined') lucide.createIcons();
                 }, 2000);
-            }).catch(err => {
+            }).catch(function (err) {
                 console.error('Copy failed:', err);
             });
         });
@@ -432,15 +520,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusBadge = document.getElementById('pm-selection-badge');
 
     function selectCard(card) {
-        cards.forEach(c => {
+        cards.forEach(function (c) {
             c.classList.remove('is-selected');
             c.setAttribute('aria-checked', 'false');
+            const radio = c.querySelector('.pm-hidden-radio');
+            if (radio) radio.checked = false;
         });
 
         card.classList.add('is-selected');
         card.setAttribute('aria-checked', 'true');
+        const activeRadio = card.querySelector('.pm-hidden-radio');
+        if (activeRadio) activeRadio.checked = true;
 
-        const methodName = card.getAttribute('data-method') || 'Payment Method';
+        const methodName = card.getAttribute('data-method') || 'Payment Option';
         if (statusBadge) {
             statusBadge.classList.add('has-selection');
             statusBadge.innerHTML = '<i data-lucide="check-circle-2" style="width:14px;height:14px;"></i> Selected: ' + methodName;
@@ -448,12 +540,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Auto-select first card on load if available
-    if (cards.length > 0) {
-        selectCard(cards[0]);
-    }
-
-    cards.forEach(card => {
+    cards.forEach(function (card) {
         card.addEventListener('click', function () {
             selectCard(this);
         });
@@ -466,33 +553,50 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ─── Lightbox Modal for Fullscreen QR ─────────────────────
-    window.openPmQrModal = function (title, subtitle, qrUrl) {
-        if (!qrUrl) return;
-        const modal = document.getElementById('pm-qr-lightbox');
-        const img = document.getElementById('pm-lightbox-img');
-        const titleEl = document.getElementById('pm-lightbox-title');
-        const subEl = document.getElementById('pm-lightbox-subtitle');
-        const downloadBtn = document.getElementById('pm-lightbox-download');
+    // ─── Lightbox Modal for Fullscreen QR (No Inline Scripting) ─
+    const lightboxModal = document.getElementById('pm-qr-lightbox');
+    const lightboxImg = document.getElementById('pm-lightbox-img');
+    const lightboxTitle = document.getElementById('pm-lightbox-title');
+    const lightboxSubtitle = document.getElementById('pm-lightbox-subtitle');
+    const lightboxDownload = document.getElementById('pm-lightbox-download');
+    const lightboxBackdrop = document.getElementById('pm-lightbox-backdrop');
+    const lightboxCloseBtn = document.getElementById('pm-lightbox-close-btn');
+    const lightboxCancelBtn = document.getElementById('pm-lightbox-cancel-btn');
 
-        if (!modal || !img) return;
-
-        titleEl.textContent = title + ' QR Code';
-        subEl.textContent = subtitle ? 'Account Holder: ' + subtitle : 'Official MoonVault FC Payment Channel';
-        img.src = qrUrl;
-        if (downloadBtn) {
-            downloadBtn.href = qrUrl;
-            downloadBtn.download = title.toLowerCase().replace(/\s+/g, '-') + '-qr.png';
+    function openPmQrModal(title, subtitle, qrUrl) {
+        if (!qrUrl || !lightboxModal || !lightboxImg) return;
+        lightboxTitle.textContent = title + ' QR Code';
+        lightboxSubtitle.textContent = subtitle ? 'Tag / Account: ' + subtitle : 'Official MoonVault Payment Channel';
+        lightboxImg.src = qrUrl;
+        if (lightboxDownload) {
+            lightboxDownload.href = qrUrl;
+            lightboxDownload.download = title.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-qr.png';
         }
-
-        modal.style.display = 'flex';
+        lightboxModal.style.display = 'flex';
         if (typeof lucide !== 'undefined') lucide.createIcons();
-    };
+    }
 
-    window.closePmQrModal = function () {
-        const modal = document.getElementById('pm-qr-lightbox');
-        if (modal) modal.style.display = 'none';
-    };
+    function closePmQrModal() {
+        if (lightboxModal) lightboxModal.style.display = 'none';
+    }
+
+    // Attach click listeners to QR box and Tap Hint
+    document.querySelectorAll('.pm-qr-box.has-qr-image, .pm-qr-tap-hint').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const card = this.closest('.payment-card-modern');
+            if (!card) return;
+            const qrUrl = card.getAttribute('data-qr');
+            if (!qrUrl) return;
+            const method = card.getAttribute('data-method') || 'Payment Method';
+            const account = card.getAttribute('data-account') || '';
+            openPmQrModal(method, account, qrUrl);
+        });
+    });
+
+    if (lightboxBackdrop) lightboxBackdrop.addEventListener('click', closePmQrModal);
+    if (lightboxCloseBtn) lightboxCloseBtn.addEventListener('click', closePmQrModal);
+    if (lightboxCancelBtn) lightboxCancelBtn.addEventListener('click', closePmQrModal);
 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
@@ -501,42 +605,56 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ─── Admin Edit Modal Handlers ────────────────────────────
-    {% if is_admin %}
     const editModal = document.getElementById('edit-pm-modal');
-    const editForm = document.getElementById('edit-pm-form');
+    if (editModal) {
+        const editForm = document.getElementById('edit-pm-form');
+        const editCloseBtn = document.getElementById('close-pm-modal');
+        const editCancelBtn = document.getElementById('cancel-pm-modal');
 
-    document.querySelectorAll('.edit-pm-btn').forEach(btn => {
-        btn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            const id = this.getAttribute('data-id');
-            const name = this.getAttribute('data-name');
-            const account = this.getAttribute('data-account');
-            const number = this.getAttribute('data-number');
-            const instructions = this.getAttribute('data-instructions');
+        document.querySelectorAll('.edit-pm-btn').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const id = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name');
+                const account = this.getAttribute('data-account');
+                const number = this.getAttribute('data-number');
+                const instructions = this.getAttribute('data-instructions');
 
-            if (editForm) {
-                editForm.action = '/payment-methods/' + id + '/edit/';
-            }
-            const nameIn = document.getElementById('edit-pm-name');
-            const acctIn = document.getElementById('edit-pm-account');
-            const numIn = document.getElementById('edit-pm-number');
-            const instIn = document.getElementById('edit-pm-instructions');
+                if (editForm) {
+                    editForm.action = '/payment-methods/' + id + '/edit/';
+                }
+                const nameIn = document.getElementById('edit-pm-name');
+                const acctIn = document.getElementById('edit-pm-account');
+                const numIn = document.getElementById('edit-pm-number');
+                const instIn = document.getElementById('edit-pm-instructions');
 
-            if (nameIn) nameIn.value = name;
-            if (acctIn) acctIn.value = account;
-            if (numIn) numIn.value = number;
-            if (instIn) instIn.value = instructions;
+                if (nameIn) nameIn.value = name;
+                if (acctIn) acctIn.value = account;
+                if (numIn) numIn.value = number;
+                if (instIn) instIn.value = instructions;
 
-            if (editModal) editModal.style.display = 'flex';
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+                // Reset file dropzone inside modal
+                const dropzonePreview = editModal.querySelector('.dropzone-preview');
+                const dropzonePrompt = editModal.querySelector('.dropzone-prompt');
+                const fileInput = editModal.querySelector('input[type="file"]');
+                if (fileInput) fileInput.value = '';
+                if (dropzonePreview) dropzonePreview.style.display = 'none';
+                if (dropzonePrompt) dropzonePrompt.style.display = '';
+                editModal.style.display = 'flex';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
         });
-    });
 
-    const closeBtn = document.getElementById('close-pm-modal');
-    const cancelBtn = document.getElementById('cancel-pm-modal');
-    if (closeBtn) closeBtn.addEventListener('click', () => { if (editModal) editModal.style.display = 'none'; });
-    if (cancelBtn) cancelBtn.addEventListener('click', () => { if (editModal) editModal.style.display = 'none'; });
-    {% endif %}
+        function closeEditModal() {
+            editModal.style.display = 'none';
+        }
+
+        if (editCloseBtn) editCloseBtn.addEventListener('click', closeEditModal);
+        if (editCancelBtn) editCancelBtn.addEventListener('click', closeEditModal);
+        editModal.addEventListener('click', function (e) {
+            if (e.target === editModal) closeEditModal();
+        });
+    }
 
 });
 </script>

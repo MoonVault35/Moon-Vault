@@ -3,6 +3,11 @@
    Modern, Sleek, Aesthetic Sky Blue Theme
    ═══════════════════════════════════════════════════════════ */
 
+/* Always hide redundant outer page title row on chat page */
+body.page-chat .page-header-row {
+    display: none !important;
+}
+
 .chat-container {
     display: flex;
     height: calc(100vh - var(--topbar-height) - 44px);

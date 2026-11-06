@@ -320,7 +320,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ─── Unified Send Message Function (Instant 1-Click Send) ──
+    let lastSendTimestamp = 0;
     function doSendMessage() {
+        const now = Date.now();
+        if (now - lastSendTimestamp < 350) return; // Prevent duplicate triggers from touch + click
+
         if (isSubmitting) return;
 
         const message = messageInput ? messageInput.value.trim() : '';
@@ -332,6 +336,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        lastSendTimestamp = now;
         isSubmitting = true;
 
         // Immediately blur input field so mobile virtual keyboard closes and returns input to bottom
@@ -393,11 +398,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ─── Attach Handlers for Guaranteed 1-Click Send ─────────
     if (chatSendBtn) {
-        // pointerdown fires immediately on touch before any blur layout shift can occur
-        chatSendBtn.addEventListener('pointerdown', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            doSendMessage();
+        // pointerdown and touchstart fire immediately on touch before any blur layout shift can occur
+        ['touchstart', 'pointerdown'].forEach(evtName => {
+            chatSendBtn.addEventListener(evtName, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                doSendMessage();
+            }, { passive: false });
         });
 
         // Click handler for mouse/pointer fallback
@@ -497,6 +504,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.body.classList.remove('keyboard-open');
             }
             scrollToBottom(true);
+        });
+        window.visualViewport.addEventListener('scroll', function () {
+            if (document.activeElement === messageInput) {
+                window.scrollTo(0, 0);
+            }
         });
     }
 

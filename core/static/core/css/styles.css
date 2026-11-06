@@ -4536,6 +4536,24 @@ input[type="file"]:not(.dropzone-input)::file-selector-button:hover {
 }
 
 /* Brand-specific themes */
+.pm-brand-cashapp {
+    background: linear-gradient(135deg, #00D632 0%, #00a827 100%);
+}
+.pm-brand-chime {
+    background: linear-gradient(135deg, #25C974 0%, #1da35d 100%);
+}
+.pm-brand-paypal {
+    background: linear-gradient(135deg, #0079C1 0%, #00457C 100%);
+}
+.pm-brand-venmo {
+    background: linear-gradient(135deg, #008CFF 0%, #0066cc 100%);
+}
+.pm-brand-zelle {
+    background: linear-gradient(135deg, #7414CA 0%, #580d9c 100%);
+}
+.pm-brand-apple {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
 .pm-brand-esewa {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
