@@ -493,6 +493,8 @@ document.addEventListener('DOMContentLoaded', function () {
         window.visualViewport.addEventListener('resize', function () {
             if (document.activeElement === messageInput) {
                 document.body.classList.add('keyboard-open');
+            } else {
+                document.body.classList.remove('keyboard-open');
             }
             scrollToBottom(true);
         });
