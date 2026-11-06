@@ -1094,14 +1094,24 @@
     }
 
     .chat-send-btn {
-        flex: 0 0 40px !important;
-        width: 40px !important;
-        height: 40px !important;
+        flex: 0 0 42px !important;
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+        transition: transform 0.15s ease, opacity 0.15s ease !important;
+    }
+
+    .chat-send-btn:active {
+        transform: scale(0.92) !important;
     }
 
     .chat-send-btn i, .chat-send-btn svg {
-        width: 17px !important;
-        height: 17px !important;
+        pointer-events: none !important;
+        width: 18px !important;
+        height: 18px !important;
     }
 
     .chat-image-staging {

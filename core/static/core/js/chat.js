@@ -200,22 +200,30 @@ document.addEventListener('DOMContentLoaded', function () {
         const hasImg = stagedFile !== null;
         if (hasText || hasImg) {
             chatSendBtn.classList.add('chat-send-active');
-            chatSendBtn.disabled = false;
+            chatSendBtn.style.opacity = '1';
         } else {
             chatSendBtn.classList.remove('chat-send-active');
+            chatSendBtn.style.opacity = '0.7';
         }
     }
 
     if (messageInput) {
         messageInput.addEventListener('input', updateSendButtonState);
+
         messageInput.addEventListener('focus', function () {
             document.body.classList.add('keyboard-open');
             setTimeout(() => scrollToBottom(true), 150);
             setTimeout(() => scrollToBottom(true), 350);
         });
+
         messageInput.addEventListener('blur', function () {
-            document.body.classList.remove('keyboard-open');
-            setTimeout(() => scrollToBottom(true), 150);
+            // Slight delay so any pending click/pointerdown on send button executes before resetting position
+            setTimeout(() => {
+                if (!isSubmitting && document.activeElement !== messageInput) {
+                    document.body.classList.remove('keyboard-open');
+                    setTimeout(() => scrollToBottom(true), 150);
+                }
+            }, 120);
         });
     }
 
@@ -311,18 +319,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // ─── Send Message via HTTP FormData ───────────────────────
-    chatForm.addEventListener('submit', function (e) {
-        e.preventDefault();
+    // ─── Unified Send Message Function (Instant 1-Click Send) ──
+    function doSendMessage() {
         if (isSubmitting) return;
 
-        const message = messageInput.value.trim();
+        const message = messageInput ? messageInput.value.trim() : '';
         const file = stagedFile;
 
-        if (!message && !file) return;
+        // Nothing to send
+        if (!message && !file) {
+            if (messageInput) messageInput.focus();
+            return;
+        }
 
         isSubmitting = true;
-        chatSendBtn.disabled = true;
+
+        // Immediately blur input field so mobile virtual keyboard closes and returns input to bottom
+        if (messageInput) {
+            messageInput.blur();
+        }
+        document.body.classList.remove('keyboard-open');
 
         const formData = new FormData();
         formData.append('receiver_id', receiverId);
@@ -334,16 +350,24 @@ document.addEventListener('DOMContentLoaded', function () {
         // Preview optimistic image URL if file exists
         let optimisticImgUrl = '';
         if (file) {
-            optimisticImgUrl = URL.createObjectURL(file);
+            try {
+                optimisticImgUrl = URL.createObjectURL(file);
+            } catch (err) {}
         }
 
         // Add bubble optimistically for immediate tactile feedback
         addMessageBubble(message, optimisticImgUrl, true, formatTimeNow(), false);
 
         // Clear input and staged image right away
-        messageInput.value = '';
+        if (messageInput) {
+            messageInput.value = '';
+        }
         clearStagedImage();
         updateSendButtonState();
+
+        // Smooth scroll to bottom
+        scrollToBottom(true);
+        setTimeout(() => scrollToBottom(true), 120);
 
         fetch('/chat/send/', {
             method: 'POST',
@@ -355,7 +379,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(r => r.json())
         .then(data => {
             isSubmitting = false;
-            chatSendBtn.disabled = false;
             updateSendButtonState();
             if (!data.success) {
                 console.error('Send error:', data.error);
@@ -363,13 +386,44 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(err => {
             isSubmitting = false;
-            chatSendBtn.disabled = false;
             updateSendButtonState();
             console.error('Network error sending message:', err);
         });
+    }
 
-        messageInput.focus();
-    });
+    // ─── Attach Handlers for Guaranteed 1-Click Send ─────────
+    if (chatSendBtn) {
+        // pointerdown fires immediately on touch before any blur layout shift can occur
+        chatSendBtn.addEventListener('pointerdown', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            doSendMessage();
+        });
+
+        // Click handler for mouse/pointer fallback
+        chatSendBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            doSendMessage();
+        });
+    }
+
+    if (chatForm) {
+        chatForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            doSendMessage();
+        });
+    }
+
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                doSendMessage();
+            }
+        });
+    }
 
     // ─── Fallback Polling ────────────────────────────────────
     let pollInterval = null;

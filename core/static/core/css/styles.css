@@ -2207,6 +2207,7 @@ body.sidebar-locked {
         border-top: 1px solid rgba(56, 189, 248, 0.18);
         z-index: 999;
         box-shadow: 0 -4px 24px rgba(11, 19, 41, 0.4);
+        transition: transform 0.28s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.22s ease;
     }
 
     /* ─── Mobile Perfect Full-Screen Chat View ───────────────── */
@@ -2253,6 +2254,7 @@ body.sidebar-locked {
         margin: 0 !important;
         padding: 0 !important;
         z-index: 10 !important;
+        transition: bottom 0.28s cubic-bezier(0.33, 1, 0.68, 1);
     }
 
     body.keyboard-open .main-content {
@@ -2260,7 +2262,9 @@ body.sidebar-locked {
     }
 
     body.keyboard-open .mobile-bottom-nav {
-        display: none !important;
+        transform: translateY(100%) !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
 
     body.page-chat .page-header-row {
@@ -2368,9 +2372,32 @@ body.sidebar-locked {
     }
 
     body.page-chat .chat-send-btn {
-        flex: 0 0 40px !important;
-        width: 40px !important;
-        height: 40px !important;
+        flex: 0 0 42px !important;
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35) !important;
+        border: none !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: transform 0.15s ease, opacity 0.15s ease !important;
+        user-select: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    body.page-chat .chat-send-btn:active {
+        transform: scale(0.92) !important;
+    }
+
+    body.page-chat .chat-send-btn i,
+    body.page-chat .chat-send-btn svg {
+        pointer-events: none !important;
+        width: 18px !important;
+        height: 18px !important;
     }
 
     .bottom-nav-item {
