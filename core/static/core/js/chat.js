@@ -116,6 +116,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Delegated click handler to open image in full lightbox without inline script attributes
+    document.addEventListener('click', function (e) {
+        const wrap = e.target.closest('.chat-bubble-image-wrap');
+        if (wrap) {
+            const img = wrap.querySelector('.chat-bubble-img');
+            if (img && img.src) {
+                window.openLightbox(img.src);
+            }
+        }
+    });
+
     // ─── Attachment Staging Handler ──────────────────────────
     function stageImage(file) {
         if (!file || !file.type.startsWith('image/')) return;
@@ -267,9 +278,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (hasImage) {
             innerHtml +=
-                '<div class="chat-bubble-image-wrap" onclick="openLightbox(\'' + escapeHtml(cleanImgUrl) + '\')">' +
-                '<img src="' + escapeHtml(cleanImgUrl) + '" alt="Photo" class="chat-bubble-img" loading="lazy" onerror="this.onerror=null; this.closest(\'.chat-bubble-image-wrap\').classList.add(\'img-load-failed\');">' +
-                '<div class="chat-img-zoom-hint" title="Tap to expand photo"><i data-lucide="maximize-2"></i></div>' +
+                '<div class="chat-bubble-image-wrap">' +
+                '<img src="' + escapeHtml(cleanImgUrl) + '" alt="Photo" class="chat-bubble-img" decoding="async">' +
+                '<div class="chat-img-zoom-hint" title="Tap to view full photo"><i data-lucide="maximize-2"></i></div>' +
                 '</div>';
         }
 
@@ -419,10 +430,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.message.image && pendingBubble) {
                     const permanentUrl = getMediaUrl(data.message.image);
                     const imgEl = pendingBubble.querySelector('.chat-bubble-img');
-                    const wrapEl = pendingBubble.querySelector('.chat-bubble-image-wrap');
-                    if (imgEl && wrapEl) {
+                    if (imgEl) {
                         imgEl.src = permanentUrl;
-                        wrapEl.setAttribute('onclick', 'openLightbox(\'' + permanentUrl + '\')');
                     }
                 }
             } else if (!data.success) {

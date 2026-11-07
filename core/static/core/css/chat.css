@@ -421,15 +421,20 @@ body.page-chat .page-header-row {
     border: 1px solid #bae6fd;
 }
 
-/* ─── WhatsApp-Grade Bubble Image Attachment ─────────────── */
+/* ─── WhatsApp-Grade Fixed-Ratio Full-View Photo Attachment ─── */
+.chat-bubble.chat-bubble-image-only,
 .chat-bubble-image-only {
     padding: 4px !important;
     overflow: hidden !important;
     position: relative !important;
+    width: fit-content !important;
+    display: inline-block !important;
 }
 
+.chat-bubble.chat-bubble-has-image,
 .chat-bubble-has-image {
     padding: 4px 4px 8px 4px !important;
+    width: fit-content !important;
 }
 
 .chat-bubble-has-image .chat-bubble-text {
@@ -441,64 +446,69 @@ body.page-chat .page-header-row {
 }
 
 .chat-bubble-image-wrap {
-    position: relative;
-    border-radius: 14px;
-    overflow: hidden;
-    cursor: pointer;
-    background: #0b1329;
-    display: block;
-    width: 100%;
-    min-width: 180px;
-    max-width: 320px;
-    line-height: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    background: #070d1e !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 280px !important;
+    max-width: 100% !important;
+    aspect-ratio: 4 / 3 !important;
+    min-height: 200px !important;
+    line-height: 0 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
+    border: 1px solid rgba(14, 165, 233, 0.25) !important;
 }
 
 .chat-bubble-img {
-    display: block;
-    width: 100%;
-    height: auto;
-    min-height: 140px;
-    max-height: 320px;
-    object-fit: cover;
-    border-radius: 14px;
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important; /* Full view - complete photo visible with zero cropping */
+    border-radius: 12px !important;
+    background: transparent !important;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .chat-bubble-img:hover {
     transform: scale(1.02);
-    opacity: 0.96;
 }
 
 .chat-img-zoom-hint {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(11, 19, 41, 0.65);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    pointer-events: none;
-    z-index: 2;
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    background: rgba(11, 19, 41, 0.7) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0.85 !important;
+    transition: opacity 0.2s ease, transform 0.2s ease !important;
+    pointer-events: none !important;
+    z-index: 4 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 .chat-img-zoom-hint i,
 .chat-img-zoom-hint svg {
-    width: 14px;
-    height: 14px;
+    width: 14px !important;
+    height: 14px !important;
 }
 
 .chat-bubble-image-wrap:hover .chat-img-zoom-hint {
-    opacity: 1;
-    transform: scale(1.05);
+    opacity: 1 !important;
+    transform: scale(1.08) !important;
 }
 
 /* WhatsApp-style overlay timestamp when message is image-only */
@@ -506,7 +516,7 @@ body.page-chat .page-header-row {
     position: absolute !important;
     bottom: 8px !important;
     right: 8px !important;
-    background: rgba(11, 19, 41, 0.7) !important;
+    background: rgba(11, 19, 41, 0.78) !important;
     backdrop-filter: blur(6px) !important;
     -webkit-backdrop-filter: blur(6px) !important;
     padding: 3px 8px !important;
@@ -515,9 +525,10 @@ body.page-chat .page-header-row {
     display: flex !important;
     align-items: center !important;
     gap: 4px !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
-    z-index: 3 !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
+    z-index: 5 !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    pointer-events: none !important;
 }
 
 .meta-over-image .chat-time {
@@ -1148,29 +1159,50 @@ body.page-chat .page-header-row {
         border-radius: 16px;
     }
 
+    .chat-bubble.chat-bubble-image-only,
+    .chat-bubble.chat-bubble-has-image {
+        width: fit-content !important;
+        max-width: 84vw !important;
+    }
+
     .chat-bubble-image-only {
-        padding: 3px !important;
+        padding: 4px !important;
         border-radius: 16px !important;
     }
 
     .chat-bubble-has-image {
-        padding: 3px 3px 6px 3px !important;
+        padding: 4px 4px 6px 4px !important;
         border-radius: 16px !important;
     }
 
     .chat-bubble-image-wrap {
-        width: 100% !important;
-        min-width: 170px !important;
-        max-width: min(280px, 78vw) !important;
-        border-radius: 14px !important;
+        position: relative !important;
+        width: 250px !important;
+        max-width: calc(84vw - 12px) !important;
+        aspect-ratio: 4 / 3 !important;
+        min-height: 185px !important;
+        height: auto !important;
+        border-radius: 13px !important;
+        background: #070d1e !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
+        border: 1px solid rgba(14, 165, 233, 0.25) !important;
+        cursor: pointer !important;
+        line-height: 0 !important;
     }
 
     .chat-bubble-img {
+        display: block !important;
         width: 100% !important;
-        max-width: min(280px, 78vw) !important;
-        min-height: 140px !important;
-        max-height: 280px !important;
-        border-radius: 13px !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: contain !important; /* Full uncropped view in fixed 4:3 ratio */
+        border-radius: 11px !important;
+        background: transparent !important;
     }
 
     .chat-attachment-staging {
@@ -1287,6 +1319,13 @@ body.page-chat .page-header-row {
     .chat-bubble {
         max-width: 90%;
         font-size: 13px;
+    }
+
+    .chat-bubble-image-wrap {
+        width: 215px !important;
+        max-width: calc(88vw - 10px) !important;
+        aspect-ratio: 4 / 3 !important;
+        min-height: 160px !important;
     }
 
     .chat-input-area,
