@@ -278,8 +278,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (hasImage) {
             innerHtml +=
-                '<div class="chat-bubble-image-wrap">' +
-                '<img src="' + escapeHtml(cleanImgUrl) + '" alt="Photo" class="chat-bubble-img" decoding="async">' +
+                '<div class="chat-bubble-image-wrap" style="position:relative;width:280px;max-width:calc(86vw - 12px);aspect-ratio:4/3;min-height:210px;background:#070d1e;display:flex;align-items:center;justify-content:center;border-radius:13px;overflow:hidden;border:1px solid rgba(14,165,233,0.25);cursor:pointer;">' +
+                '<img src="' + escapeHtml(cleanImgUrl) + '" alt="Photo" class="chat-bubble-img" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;border-radius:11px;" decoding="async">' +
                 '<div class="chat-img-zoom-hint" title="Tap to view full photo"><i data-lucide="maximize-2"></i></div>' +
                 '</div>';
         }

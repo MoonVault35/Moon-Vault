@@ -5,7 +5,76 @@
 {% block page_title %}Team Chat{% endblock %}
 {% block body_class %}page-chat{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/chat.css' %}?v=13.0">
+<link rel="stylesheet" href="{% static 'core/css/chat.css' %}?v=14.0">
+<style>
+/* Inline critical styles for WhatsApp-grade photo attachments - 100% cache immune */
+.chat-bubble.chat-bubble-image-only,
+.chat-bubble-image-only {
+    padding: 4px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    width: fit-content !important;
+    display: inline-block !important;
+}
+
+.chat-bubble.chat-bubble-has-image,
+.chat-bubble-has-image {
+    padding: 4px 4px 8px 4px !important;
+    width: fit-content !important;
+}
+
+.chat-bubble-image-wrap {
+    position: relative !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    background: #070d1e !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 280px !important;
+    max-width: calc(86vw - 12px) !important;
+    aspect-ratio: 4 / 3 !important;
+    min-height: 210px !important;
+    line-height: 0 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
+    border: 1px solid rgba(14, 165, 233, 0.25) !important;
+}
+
+.chat-bubble-img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    border-radius: 12px !important;
+    background: transparent !important;
+}
+
+@media (max-width: 768px) {
+    .chat-bubble.chat-bubble-image-only,
+    .chat-bubble.chat-bubble-has-image {
+        width: fit-content !important;
+        max-width: 86vw !important;
+    }
+    .chat-bubble-image-wrap {
+        width: 280px !important;
+        max-width: calc(86vw - 12px) !important;
+        aspect-ratio: 4 / 3 !important;
+        min-height: 210px !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .chat-bubble-image-wrap {
+        width: 240px !important;
+        max-width: calc(90vw - 10px) !important;
+        aspect-ratio: 4 / 3 !important;
+        min-height: 180px !important;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -103,8 +172,8 @@
             {% for msg in chat_messages %}
             <div class="chat-bubble {% if msg.sender_id == user_id %}chat-bubble-sent{% else %}chat-bubble-received{% endif %}{% if msg.image and not msg.message %} chat-bubble-image-only{% elif msg.image and msg.message %} chat-bubble-has-image{% endif %}">
                 {% if msg.image %}
-                <div class="chat-bubble-image-wrap">
-                    <img src="{{ msg.image_url|default:msg.image }}" alt="Photo" class="chat-bubble-img" decoding="async">
+                <div class="chat-bubble-image-wrap" style="position:relative;width:280px;max-width:calc(86vw - 12px);aspect-ratio:4/3;min-height:210px;background:#070d1e;display:flex;align-items:center;justify-content:center;border-radius:13px;overflow:hidden;border:1px solid rgba(14,165,233,0.25);cursor:pointer;">
+                    <img src="{{ msg.image_url|default:msg.image }}" alt="Photo" class="chat-bubble-img" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;border-radius:11px;" decoding="async">
                     <div class="chat-img-zoom-hint" title="Tap to view full photo">
                         <i data-lucide="maximize-2"></i>
                     </div>
@@ -221,8 +290,8 @@
             {% for msg in chat_messages %}
             <div class="chat-bubble {% if msg.sender_id == user_id %}chat-bubble-sent{% else %}chat-bubble-received{% endif %}{% if msg.image and not msg.message %} chat-bubble-image-only{% elif msg.image and msg.message %} chat-bubble-has-image{% endif %}">
                 {% if msg.image %}
-                <div class="chat-bubble-image-wrap">
-                    <img src="{{ msg.image_url|default:msg.image }}" alt="Photo" class="chat-bubble-img" decoding="async">
+                <div class="chat-bubble-image-wrap" style="position:relative;width:280px;max-width:calc(86vw - 12px);aspect-ratio:4/3;min-height:210px;background:#070d1e;display:flex;align-items:center;justify-content:center;border-radius:13px;overflow:hidden;border:1px solid rgba(14,165,233,0.25);cursor:pointer;">
+                    <img src="{{ msg.image_url|default:msg.image }}" alt="Photo" class="chat-bubble-img" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;border-radius:11px;" decoding="async">
                     <div class="chat-img-zoom-hint" title="Tap to view full photo">
                         <i data-lucide="maximize-2"></i>
                     </div>
@@ -318,5 +387,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'core/js/chat.js' %}?v=13.0"></script>
+<script src="{% static 'core/js/chat.js' %}?v=14.0"></script>
 {% endblock %}
