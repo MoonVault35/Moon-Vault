@@ -25,6 +25,22 @@ def normalize_doc(doc):
     return doc
 
 
+def normalize_message_image_url(image_path):
+    """Ensure image paths always have a clean, browser-accessible URL."""
+    if not image_path:
+        return ''
+    img = str(image_path).strip()
+    if not img:
+        return ''
+    if img.startswith('blob:') or img.startswith('data:') or img.startswith('http://') or img.startswith('https://'):
+        return img
+    if img.startswith('/media/'):
+        return img
+    if img.startswith('/'):
+        return img
+    return f"/media/{img}"
+
+
 def landing(request):
     if 'user_id' in request.session:
         return redirect('home')
@@ -411,6 +427,7 @@ def chat(request):
                 }).sort('timestamp', 1))
                 for msg in chat_messages:
                     normalize_doc(msg)
+                    msg['image_url'] = normalize_message_image_url(msg.get('image'))
                 # Mark as read
                 db.messages.update_many(
                     {'sender_id': active_player_id, 'receiver_id': user_id, 'is_read': False},
@@ -438,6 +455,7 @@ def chat(request):
             }).sort('timestamp', 1))
             for msg in chat_messages:
                 normalize_doc(msg)
+                msg['image_url'] = normalize_message_image_url(msg.get('image'))
             # Mark admin messages as read
             db.messages.update_many(
                 {'sender_id': admin_id, 'receiver_id': user_id, 'is_read': False},
@@ -475,12 +493,15 @@ def chat_messages(request, player_id):
 
     result = []
     for msg in msgs:
+        raw_img = msg.get('image', '')
+        clean_img = normalize_message_image_url(raw_img)
         result.append({
             'id': str(msg['_id']),
             'sender_id': msg['sender_id'],
             'receiver_id': msg['receiver_id'],
             'message': msg.get('message', ''),
-            'image': msg.get('image', ''),
+            'image': clean_img,
+            'image_url': clean_img,
             'timestamp': msg['timestamp'].strftime('%b %d, %I:%M %p') if isinstance(msg['timestamp'], datetime) else str(msg['timestamp']),
             'is_read': msg.get('is_read', False),
             'is_mine': msg['sender_id'] == user_id,
@@ -546,6 +567,7 @@ def chat_send(request):
     result = db.messages.insert_one(msg_doc)
     msg_id = str(result.inserted_id)
     formatted_time = now.strftime('%b %d, %I:%M %p')
+    clean_image_url = normalize_message_image_url(image_path)
 
     # Real-time WebSocket broadcast via Channels
     try:
@@ -557,7 +579,8 @@ def chat_send(request):
                 {
                     'type': 'chat_message',
                     'message': message_text,
-                    'image': image_path,
+                    'image': clean_image_url,
+                    'image_url': clean_image_url,
                     'sender_id': user_id,
                     'receiver_id': receiver_id,
                     'timestamp': formatted_time,
@@ -570,7 +593,8 @@ def chat_send(request):
                 {
                     'type': 'chat_message_sent',
                     'message': message_text,
-                    'image': image_path,
+                    'image': clean_image_url,
+                    'image_url': clean_image_url,
                     'sender_id': user_id,
                     'receiver_id': receiver_id,
                     'timestamp': formatted_time,
@@ -591,7 +615,7 @@ def chat_send(request):
             title=f"💬 {sender_display_name}",
             body=push_body,
             url=chat_target_url,
-            image=image_path if image_path else None,
+            image=clean_image_url if clean_image_url else None,
             tag=f"chat-{user_id}"
         )
     except Exception as e:
@@ -604,7 +628,8 @@ def chat_send(request):
             'sender_id': user_id,
             'receiver_id': receiver_id,
             'message': message_text,
-            'image': image_path,
+            'image': clean_image_url,
+            'image_url': clean_image_url,
             'timestamp': formatted_time,
             'is_read': False,
             'is_mine': True,

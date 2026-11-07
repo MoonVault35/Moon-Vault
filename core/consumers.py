@@ -72,10 +72,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         """Handle incoming chat message from channel layer."""
+        img = event.get('image_url') or event.get('image') or ''
         await self.send(text_data=json.dumps({
             'type': 'received',
             'message': event.get('message', ''),
-            'image': event.get('image', ''),
+            'image': img,
+            'image_url': img,
             'sender_id': event['sender_id'],
             'receiver_id': event['receiver_id'],
             'timestamp': event['timestamp'],
@@ -84,10 +86,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message_sent(self, event):
         """Handle sent confirmation from channel layer."""
+        img = event.get('image_url') or event.get('image') or ''
         await self.send(text_data=json.dumps({
             'type': 'sent',
             'message': event.get('message', ''),
-            'image': event.get('image', ''),
+            'image': img,
+            'image_url': img,
             'sender_id': event['sender_id'],
             'receiver_id': event['receiver_id'],
             'timestamp': event['timestamp'],

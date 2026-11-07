@@ -5,7 +5,7 @@
 {% block page_title %}Team Chat{% endblock %}
 {% block body_class %}page-chat{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/chat.css' %}?v=11.0">
+<link rel="stylesheet" href="{% static 'core/css/chat.css' %}?v=12.0">
 {% endblock %}
 
 {% block content %}
@@ -101,16 +101,19 @@
             </div>
 
             {% for msg in chat_messages %}
-            <div class="chat-bubble {% if msg.sender_id == user_id %}chat-bubble-sent{% else %}chat-bubble-received{% endif %}">
+            <div class="chat-bubble {% if msg.sender_id == user_id %}chat-bubble-sent{% else %}chat-bubble-received{% endif %}{% if msg.image and not msg.message %} chat-bubble-image-only{% elif msg.image and msg.message %} chat-bubble-has-image{% endif %}">
                 {% if msg.image %}
-                <div class="chat-bubble-image-wrap">
-                    <img src="/media/{{ msg.image }}" alt="Attached photo" class="chat-bubble-img" onclick="openLightbox('/media/{{ msg.image }}')" loading="lazy">
+                <div class="chat-bubble-image-wrap" onclick="openLightbox('{{ msg.image_url|default:msg.image }}')">
+                    <img src="{{ msg.image_url|default:msg.image }}" alt="Photo" class="chat-bubble-img" loading="lazy" onerror="this.onerror=null; this.closest('.chat-bubble-image-wrap').classList.add('img-load-failed');">
+                    <div class="chat-img-zoom-hint" title="Tap to expand photo">
+                        <i data-lucide="maximize-2"></i>
+                    </div>
                 </div>
                 {% endif %}
                 {% if msg.message %}
                 <p class="chat-bubble-text">{{ msg.message }}</p>
                 {% endif %}
-                <div class="chat-bubble-meta">
+                <div class="chat-bubble-meta{% if msg.image and not msg.message %} meta-over-image{% endif %}">
                     <span class="chat-time">{{ msg.timestamp|date:"g:i A" }}</span>
                     {% if msg.sender_id == user_id %}
                     <span class="chat-status-icon {% if msg.is_read %}read{% endif %}">
@@ -216,16 +219,19 @@
             </div>
 
             {% for msg in chat_messages %}
-            <div class="chat-bubble {% if msg.sender_id == user_id %}chat-bubble-sent{% else %}chat-bubble-received{% endif %}">
+            <div class="chat-bubble {% if msg.sender_id == user_id %}chat-bubble-sent{% else %}chat-bubble-received{% endif %}{% if msg.image and not msg.message %} chat-bubble-image-only{% elif msg.image and msg.message %} chat-bubble-has-image{% endif %}">
                 {% if msg.image %}
-                <div class="chat-bubble-image-wrap">
-                    <img src="/media/{{ msg.image }}" alt="Attached photo" class="chat-bubble-img" onclick="openLightbox('/media/{{ msg.image }}')" loading="lazy">
+                <div class="chat-bubble-image-wrap" onclick="openLightbox('{{ msg.image_url|default:msg.image }}')">
+                    <img src="{{ msg.image_url|default:msg.image }}" alt="Photo" class="chat-bubble-img" loading="lazy" onerror="this.onerror=null; this.closest('.chat-bubble-image-wrap').classList.add('img-load-failed');">
+                    <div class="chat-img-zoom-hint" title="Tap to expand photo">
+                        <i data-lucide="maximize-2"></i>
+                    </div>
                 </div>
                 {% endif %}
                 {% if msg.message %}
                 <p class="chat-bubble-text">{{ msg.message }}</p>
                 {% endif %}
-                <div class="chat-bubble-meta">
+                <div class="chat-bubble-meta{% if msg.image and not msg.message %} meta-over-image{% endif %}">
                     <span class="chat-time">{{ msg.timestamp|date:"g:i A" }}</span>
                     {% if msg.sender_id == user_id %}
                     <span class="chat-status-icon {% if msg.is_read %}read{% endif %}">
@@ -312,5 +318,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'core/js/chat.js' %}?v=11.0"></script>
+<script src="{% static 'core/js/chat.js' %}?v=12.0"></script>
 {% endblock %}

@@ -421,28 +421,140 @@ body.page-chat .page-header-row {
     border: 1px solid #bae6fd;
 }
 
-/* Bubble Image Attachment */
+/* ─── WhatsApp-Grade Bubble Image Attachment ─────────────── */
+.chat-bubble-image-only {
+    padding: 4px !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+.chat-bubble-has-image {
+    padding: 4px 4px 8px 4px !important;
+}
+
+.chat-bubble-has-image .chat-bubble-text {
+    padding: 6px 8px 2px 8px;
+}
+
+.chat-bubble-has-image .chat-bubble-meta {
+    padding: 0 8px;
+}
+
 .chat-bubble-image-wrap {
-    margin: -4px -4px 6px -4px;
+    position: relative;
     border-radius: 14px;
     overflow: hidden;
-    position: relative;
     cursor: pointer;
-    background: rgba(0, 0, 0, 0.04);
+    background: #0b1329;
+    display: block;
+    width: 100%;
+    min-width: 180px;
+    max-width: 320px;
+    line-height: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .chat-bubble-img {
     display: block;
-    max-width: 100%;
-    max-height: 280px;
+    width: 100%;
+    height: auto;
+    min-height: 140px;
+    max-height: 320px;
     object-fit: cover;
     border-radius: 14px;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
 }
 
 .chat-bubble-img:hover {
     transform: scale(1.02);
-    opacity: 0.95;
+    opacity: 0.96;
+}
+
+.chat-img-zoom-hint {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(11, 19, 41, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.chat-img-zoom-hint i,
+.chat-img-zoom-hint svg {
+    width: 14px;
+    height: 14px;
+}
+
+.chat-bubble-image-wrap:hover .chat-img-zoom-hint {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+/* WhatsApp-style overlay timestamp when message is image-only */
+.meta-over-image {
+    position: absolute !important;
+    bottom: 8px !important;
+    right: 8px !important;
+    background: rgba(11, 19, 41, 0.7) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    padding: 3px 8px !important;
+    border-radius: 12px !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+    z-index: 3 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.meta-over-image .chat-time {
+    color: #f8fafc !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.meta-over-image .chat-status-icon {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.meta-over-image .chat-status-icon.read {
+    color: #38bdf8 !important;
+}
+
+/* Load failure fallback card */
+.img-load-failed {
+    padding: 24px 16px !important;
+    background: rgba(15, 23, 42, 0.75) !important;
+    text-align: center !important;
+    color: #e2e8f0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.img-load-failed .chat-bubble-img {
+    display: none !important;
+}
+
+.img-load-failed::after {
+    content: "📷 Photo • Tap to view full image";
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .chat-bubble-text {
@@ -1036,9 +1148,29 @@ body.page-chat .page-header-row {
         border-radius: 16px;
     }
 
+    .chat-bubble-image-only {
+        padding: 3px !important;
+        border-radius: 16px !important;
+    }
+
+    .chat-bubble-has-image {
+        padding: 3px 3px 6px 3px !important;
+        border-radius: 16px !important;
+    }
+
+    .chat-bubble-image-wrap {
+        width: 100% !important;
+        min-width: 170px !important;
+        max-width: min(280px, 78vw) !important;
+        border-radius: 14px !important;
+    }
+
     .chat-bubble-img {
-        max-width: 190px;
-        max-height: 170px;
+        width: 100% !important;
+        max-width: min(280px, 78vw) !important;
+        min-height: 140px !important;
+        max-height: 280px !important;
+        border-radius: 13px !important;
     }
 
     .chat-attachment-staging {

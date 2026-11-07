@@ -69,16 +69,34 @@ document.addEventListener('DOMContentLoaded', function () {
         return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     }
 
+    // ─── Media URL Helper ────────────────────────────────────
+    function getMediaUrl(url) {
+        if (!url) return '';
+        const trimmed = String(url).trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('blob:') || trimmed.startsWith('data:') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+            return trimmed;
+        }
+        if (trimmed.startsWith('/media/')) {
+            return trimmed;
+        }
+        if (trimmed.startsWith('/')) {
+            return trimmed;
+        }
+        return '/media/' + trimmed;
+    }
+
     // ─── Lightbox Viewer ─────────────────────────────────────
     window.openLightbox = function (imgSrc) {
+        const cleanUrl = getMediaUrl(imgSrc);
         const lightbox = document.getElementById('chat-lightbox');
         const lightboxImg = document.getElementById('lightbox-img');
         const lightboxDownload = document.getElementById('lightbox-download');
-        if (!lightbox || !lightboxImg) return;
+        if (!lightbox || !lightboxImg || !cleanUrl) return;
 
-        lightboxImg.src = imgSrc;
+        lightboxImg.src = cleanUrl;
         if (lightboxDownload) {
-            lightboxDownload.href = imgSrc;
+            lightboxDownload.href = cleanUrl;
         }
         lightbox.style.display = 'flex';
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -232,24 +250,34 @@ document.addEventListener('DOMContentLoaded', function () {
         const emptyState = chatMessages.querySelector('.chat-empty-messages');
         if (emptyState) emptyState.remove();
 
+        const cleanImgUrl = getMediaUrl(imageUrl);
+        const hasImage = Boolean(cleanImgUrl);
+        const hasText = Boolean(message && message.trim());
+
         const bubble = document.createElement('div');
-        bubble.className = 'chat-bubble ' + (isMine ? 'chat-bubble-sent' : 'chat-bubble-received');
+        let bubbleClasses = 'chat-bubble ' + (isMine ? 'chat-bubble-sent' : 'chat-bubble-received');
+        if (hasImage && !hasText) {
+            bubbleClasses += ' chat-bubble-image-only';
+        } else if (hasImage && hasText) {
+            bubbleClasses += ' chat-bubble-has-image';
+        }
+        bubble.className = bubbleClasses;
 
         let innerHtml = '';
 
-        if (imageUrl) {
-            const displayUrl = imageUrl.startsWith('http') || imageUrl.startsWith('data:') ? imageUrl : '/media/' + imageUrl;
+        if (hasImage) {
             innerHtml +=
-                '<div class="chat-bubble-image-wrap">' +
-                '<img src="' + displayUrl + '" alt="Attached photo" class="chat-bubble-img" onclick="openLightbox(\'' + displayUrl + '\')" loading="lazy">' +
+                '<div class="chat-bubble-image-wrap" onclick="openLightbox(\'' + escapeHtml(cleanImgUrl) + '\')">' +
+                '<img src="' + escapeHtml(cleanImgUrl) + '" alt="Photo" class="chat-bubble-img" loading="lazy" onerror="this.onerror=null; this.closest(\'.chat-bubble-image-wrap\').classList.add(\'img-load-failed\');">' +
+                '<div class="chat-img-zoom-hint" title="Tap to expand photo"><i data-lucide="maximize-2"></i></div>' +
                 '</div>';
         }
 
-        if (message) {
+        if (hasText) {
             innerHtml += '<p class="chat-bubble-text">' + escapeHtml(message) + '</p>';
         }
 
-        innerHtml += '<div class="chat-bubble-meta">';
+        innerHtml += '<div class="chat-bubble-meta ' + (hasImage && !hasText ? 'meta-over-image' : '') + '">';
         innerHtml += '<span class="chat-time">' + escapeHtml(timestamp) + '</span>';
         if (isMine) {
             innerHtml +=
@@ -266,6 +294,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+        return bubble;
     }
 
     // ─── WebSocket Connection ────────────────────────────────
@@ -361,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Add bubble optimistically for immediate tactile feedback
-        addMessageBubble(message, optimisticImgUrl, true, formatTimeNow(), false);
+        const pendingBubble = addMessageBubble(message, optimisticImgUrl, true, formatTimeNow(), false);
 
         // Clear input and staged image right away
         if (messageInput) {
@@ -385,7 +414,18 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             isSubmitting = false;
             updateSendButtonState();
-            if (!data.success) {
+            if (data.success && data.message) {
+                // If the message had an image and an optimistic preview was used, upgrade to permanent server URL
+                if (data.message.image && pendingBubble) {
+                    const permanentUrl = getMediaUrl(data.message.image);
+                    const imgEl = pendingBubble.querySelector('.chat-bubble-img');
+                    const wrapEl = pendingBubble.querySelector('.chat-bubble-image-wrap');
+                    if (imgEl && wrapEl) {
+                        imgEl.src = permanentUrl;
+                        wrapEl.setAttribute('onclick', 'openLightbox(\'' + permanentUrl + '\')');
+                    }
+                }
+            } else if (!data.success) {
                 console.error('Send error:', data.error);
             }
         })
