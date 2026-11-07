@@ -25,8 +25,10 @@ def normalize_doc(doc):
     return doc
 
 
-def normalize_message_image_url(image_path):
+def normalize_message_image_url(image_path, image_data=None):
     """Ensure image paths always have a clean, browser-accessible URL."""
+    if image_data and str(image_data).startswith('data:'):
+        return image_data
     if not image_path:
         return ''
     img = str(image_path).strip()
@@ -427,7 +429,7 @@ def chat(request):
                 }).sort('timestamp', 1))
                 for msg in chat_messages:
                     normalize_doc(msg)
-                    msg['image_url'] = normalize_message_image_url(msg.get('image'))
+                    msg['image_url'] = normalize_message_image_url(msg.get('image'), msg.get('image_data'))
                 # Mark as read
                 db.messages.update_many(
                     {'sender_id': active_player_id, 'receiver_id': user_id, 'is_read': False},
@@ -455,7 +457,7 @@ def chat(request):
             }).sort('timestamp', 1))
             for msg in chat_messages:
                 normalize_doc(msg)
-                msg['image_url'] = normalize_message_image_url(msg.get('image'))
+                msg['image_url'] = normalize_message_image_url(msg.get('image'), msg.get('image_data'))
             # Mark admin messages as read
             db.messages.update_many(
                 {'sender_id': admin_id, 'receiver_id': user_id, 'is_read': False},
@@ -494,7 +496,8 @@ def chat_messages(request, player_id):
     result = []
     for msg in msgs:
         raw_img = msg.get('image', '')
-        clean_img = normalize_message_image_url(raw_img)
+        img_data = msg.get('image_data', '')
+        clean_img = normalize_message_image_url(raw_img, img_data)
         result.append({
             'id': str(msg['_id']),
             'sender_id': msg['sender_id'],
@@ -542,17 +545,46 @@ def chat_send(request):
 
     # Process optional image
     image_path = ''
+    data_url = ''
     if has_image:
         pic = request.FILES['image']
+        raw_bytes = pic.read()
+        ext = os.path.splitext(pic.name)[1].lower() or '.jpg'
+        content_type = pic.content_type or 'image/jpeg'
+
+        # Optimize image with Pillow for fast mobile rendering & storage efficiency
+        try:
+            import io
+            from PIL import Image, ImageOps
+            with Image.open(io.BytesIO(raw_bytes)) as pil_img:
+                pil_img = ImageOps.exif_transpose(pil_img)
+                if pil_img.mode in ('RGBA', 'LA', 'P'):
+                    pil_img = pil_img.convert('RGB')
+                pil_img.thumbnail((1280, 1280), Image.Resampling.LANCZOS)
+                buf = io.BytesIO()
+                pil_img.save(buf, format='JPEG', quality=82, optimize=True)
+                optimized_bytes = buf.getvalue()
+                content_type = 'image/jpeg'
+                ext = '.jpg'
+        except Exception:
+            optimized_bytes = raw_bytes
+
+        # Persistent Data URL for immediate inline rendering
+        import base64
+        b64_str = base64.b64encode(optimized_bytes).decode('utf-8')
+        data_url = f"data:{content_type};base64,{b64_str}"
+
+        # Also write to local disk
         upload_dir = os.path.join(settings.MEDIA_ROOT, 'chat_images')
         os.makedirs(upload_dir, exist_ok=True)
-        ext = os.path.splitext(pic.name)[1].lower() or '.jpg'
         timestamp_str = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
         filename = f"chat_{timestamp_str}{ext}"
         filepath = os.path.join(upload_dir, filename)
-        with open(filepath, 'wb+') as dest:
-            for chunk in pic.chunks():
-                dest.write(chunk)
+        try:
+            with open(filepath, 'wb+') as dest:
+                dest.write(optimized_bytes)
+        except Exception:
+            pass
         image_path = f"chat_images/{filename}"
 
     now = datetime.utcnow()
@@ -561,13 +593,14 @@ def chat_send(request):
         'receiver_id': receiver_id,
         'message': message_text,
         'image': image_path,
+        'image_data': data_url,
         'timestamp': now,
         'is_read': False,
     }
     result = db.messages.insert_one(msg_doc)
     msg_id = str(result.inserted_id)
     formatted_time = now.strftime('%b %d, %I:%M %p')
-    clean_image_url = normalize_message_image_url(image_path)
+    clean_image_url = data_url if data_url else normalize_message_image_url(image_path)
 
     # Real-time WebSocket broadcast via Channels
     try:
