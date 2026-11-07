@@ -267,7 +267,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const bubble = document.createElement('div');
         let bubbleClasses = 'chat-bubble ' + (isMine ? 'chat-bubble-sent' : 'chat-bubble-received');
-        if (hasImage && !hasText) {
+        const isImageOnly = hasImage && !hasText;
+        if (isImageOnly) {
             bubbleClasses += ' chat-bubble-image-only';
         } else if (hasImage && hasText) {
             bubbleClasses += ' chat-bubble-has-image';
@@ -277,9 +278,13 @@ document.addEventListener('DOMContentLoaded', function () {
         let innerHtml = '';
 
         if (hasImage) {
+            if (!isMine) {
+                const otherName = window.CHAT_OTHER_NAME || 'MoonVault Support';
+                innerHtml += '<span class="chat-sender-name">' + escapeHtml(otherName) + '</span>';
+            }
             innerHtml +=
-                '<div class="chat-bubble-image-wrap" style="position:relative;width:280px;max-width:calc(86vw - 12px);aspect-ratio:4/3;min-height:210px;background:#070d1e;display:flex;align-items:center;justify-content:center;border-radius:13px;overflow:hidden;border:1px solid rgba(14,165,233,0.25);cursor:pointer;">' +
-                '<img src="' + escapeHtml(cleanImgUrl) + '" alt="Photo" class="chat-bubble-img" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;border-radius:11px;" decoding="async">' +
+                '<div class="chat-bubble-image-wrap" style="position:relative;width:290px;max-width:calc(85vw - 12px);aspect-ratio:4/3;min-height:200px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px rgba(15,23,42,0.12);border:1px solid rgba(0,0,0,0.06);cursor:pointer;">' +
+                '<img src="' + escapeHtml(cleanImgUrl) + '" alt="Photo" class="chat-bubble-img" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:cover;border-radius:20px;" decoding="async">' +
                 '<div class="chat-img-zoom-hint" title="Tap to view full photo"><i data-lucide="maximize-2"></i></div>' +
                 '</div>';
         }
@@ -288,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function () {
             innerHtml += '<p class="chat-bubble-text">' + escapeHtml(message) + '</p>';
         }
 
-        innerHtml += '<div class="chat-bubble-meta ' + (hasImage && !hasText ? 'meta-over-image' : '') + '">';
+        innerHtml += '<div class="chat-bubble-meta ' + (isImageOnly ? 'meta-beside-image' : '') + '">';
         innerHtml += '<span class="chat-time">' + escapeHtml(timestamp) + '</span>';
         if (isMine) {
             innerHtml +=
