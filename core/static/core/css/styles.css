@@ -1678,6 +1678,35 @@ body.sidebar-locked {
     margin-bottom: 30px;
 }
 
+.login-logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px auto;
+    width: 86px;
+    height: 86px;
+    position: relative;
+}
+
+.login-logo-img {
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 22px rgba(239, 68, 68, 0.45), 0 6px 18px rgba(0, 0, 0, 0.35);
+    border: 2px solid rgba(239, 68, 68, 0.55);
+    background: #000000;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.login-logo-wrap:hover .login-logo-img {
+    transform: scale(1.04);
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.65), 0 8px 22px rgba(0, 0, 0, 0.45);
+}
+
 .login-logo-icon {
     width: 52px;
     height: 52px;
@@ -1704,6 +1733,14 @@ body.sidebar-locked {
     display: flex;
     flex-direction: column;
     gap: 18px;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+    font-size: 16px;
+    height: 48px;
+    min-height: 48px;
+    border-radius: 12px;
 }
 
 .password-input-wrap {

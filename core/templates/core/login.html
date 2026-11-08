@@ -3,20 +3,345 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0284c7">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="theme-color" content="#060e22">
     <title>Login - MoonVault FC</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}?v=6.0">
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}?v=13.0">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Modern Mobile-Optimized & Fixed-Shape Login Styles */
+        html, body.login-page {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
+
+        body.login-page {
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 20%, #0d1e3d 0%, #060e22 75%);
+            padding: 20px 16px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Ambient background glow */
+        body.login-page::before {
+            content: '';
+            position: absolute;
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.12) 0%, rgba(2, 132, 199, 0.1) 45%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            margin: auto;
+            position: relative;
+            z-index: 2;
+            box-sizing: border-box;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 34px 28px 28px 28px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(226, 232, 240, 0.85);
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-logo-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px auto;
+            width: 86px;
+            height: 86px;
+            position: relative;
+        }
+
+        .login-logo-img {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 22px rgba(239, 68, 68, 0.45), 0 6px 18px rgba(0, 0, 0, 0.35);
+            border: 2px solid rgba(239, 68, 68, 0.55);
+            background: #000000;
+            display: block;
+            user-select: none;
+            -webkit-user-drag: none;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .login-logo-wrap:hover .login-logo-img {
+            transform: scale(1.04);
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.65), 0 8px 22px rgba(0, 0, 0, 0.45);
+        }
+
+        .login-header h1 {
+            font-size: 23px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: -0.4px;
+            line-height: 1.25;
+        }
+
+        .login-header p {
+            color: #64748b;
+            font-size: 13.5px;
+            margin-top: 5px;
+            margin-bottom: 0;
+            font-weight: 500;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .login-form .form-group {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .login-form .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .login-form .form-group label i {
+            color: #0284c7;
+        }
+
+        /* CRITICAL: 16px font-size eliminates iOS/Android auto-zoom on input focus */
+        .login-form input[type="text"],
+        .login-form input[type="password"] {
+            width: 100% !important;
+            height: 48px !important;
+            min-height: 48px !important;
+            padding: 0 14px !important;
+            font-size: 16px !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 12px !important;
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            font-family: inherit !important;
+            transition: all 0.2s ease !important;
+            box-sizing: border-box !important;
+            -webkit-appearance: none !important;
+            appearance: none !important;
+        }
+
+        .login-form input[type="text"]:focus,
+        .login-form input[type="password"]:focus {
+            outline: none !important;
+            background: #ffffff !important;
+            border-color: #0284c7 !important;
+            box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.18) !important;
+        }
+
+        .password-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .password-input-wrap input {
+            padding-right: 46px !important;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: color 0.15s ease, background 0.15s ease;
+            padding: 0;
+            z-index: 5;
+        }
+
+        .password-toggle-btn:hover {
+            color: #0284c7;
+            background: #f1f5f9;
+        }
+
+        .password-toggle-btn i,
+        .password-toggle-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .login-submit-btn {
+            height: 48px !important;
+            min-height: 48px !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            border-radius: 12px !important;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+            margin-top: 4px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .login-submit-btn:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
+            box-shadow: 0 6px 18px rgba(2, 132, 199, 0.4) !important;
+        }
+
+        .login-submit-btn:active {
+            transform: scale(0.985) !important;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .login-footer a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.15s ease;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .login-footer a:hover {
+            color: #0284c7;
+            background: #f8fafc;
+        }
+
+        /* ─── Responsive Adjustments for Mobile View ─── */
+        @media (max-width: 480px) {
+            body.login-page {
+                padding: 12px;
+            }
+            .login-container {
+                max-width: 100%;
+                width: 100%;
+            }
+            .login-card {
+                padding: 26px 18px 22px 18px;
+                border-radius: 20px;
+            }
+            .login-logo-wrap {
+                width: 76px;
+                height: 76px;
+                margin-bottom: 12px;
+            }
+            .login-logo-img {
+                width: 76px;
+                height: 76px;
+            }
+            .login-header h1 {
+                font-size: 21px;
+            }
+            .login-header p {
+                font-size: 13px;
+            }
+            .login-form {
+                gap: 14px;
+            }
+        }
+
+        /* Short screens / virtual keyboard open */
+        @media (max-height: 640px) {
+            body.login-page {
+                align-items: flex-start;
+                padding: 10px;
+            }
+            .login-card {
+                padding: 20px 18px 16px 18px;
+                margin: 8px auto;
+            }
+            .login-logo-wrap {
+                width: 60px;
+                height: 60px;
+                margin-bottom: 8px;
+            }
+            .login-logo-img {
+                width: 60px;
+                height: 60px;
+            }
+            .login-header {
+                margin-bottom: 14px;
+            }
+            .login-header h1 {
+                font-size: 19px;
+            }
+            .login-form {
+                gap: 10px;
+            }
+        }
+    </style>
 </head>
 <body class="login-page">
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <i data-lucide="shield" class="login-logo-icon"></i>
+                <div class="login-logo-wrap">
+                    <img src="{% static 'core/images/moonvault-logo.jpg' %}" alt="MoonVault Logo" class="login-logo-img">
+                </div>
                 <h1>MoonVault FC</h1>
                 <p>Sign in to your account</p>
             </div>
