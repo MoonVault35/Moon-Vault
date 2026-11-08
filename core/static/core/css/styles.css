@@ -3279,6 +3279,140 @@ body.sidebar-locked {
     background: #fee2e2;
 }
 
+/* ─── Admin Edit Payment Method Modal (Responsive & Scroll-Safe) ─── */
+#edit-pm-modal.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    z-index: 9999;
+    background: rgba(11, 19, 41, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+}
+
+#edit-pm-modal .edit-pm-modal-card {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(14, 165, 233, 0.18);
+    padding: 20px 22px 16px 22px;
+    margin: auto;
+    box-sizing: border-box;
+    position: relative;
+}
+
+#edit-pm-modal .edit-pm-form-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    margin: 0;
+}
+
+#edit-pm-modal .edit-pm-form-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 4px;
+    padding-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    overscroll-behavior: contain;
+}
+
+#edit-pm-modal .edit-pm-form-actions {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 14px;
+    margin-top: 8px;
+    border-top: 1px solid #f1f5f9;
+    background: #ffffff;
+    z-index: 10;
+}
+
+#edit-pm-modal .edit-pm-form-actions .btn {
+    height: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+#edit-pm-modal .edit-pm-form-actions .btn-ghost {
+    flex: 1 1 auto;
+}
+
+#edit-pm-modal .edit-pm-form-actions .btn-primary {
+    flex: 1.5 1 auto;
+}
+
+@media (max-width: 768px) {
+    #edit-pm-modal.modal-overlay {
+        padding: 8px;
+    }
+
+    #edit-pm-modal .edit-pm-modal-card {
+        padding: 14px 14px 12px 14px;
+        border-radius: 18px;
+        max-height: calc(100vh - 16px);
+        max-height: calc(100dvh - 16px);
+    }
+
+    #edit-pm-modal .edit-pm-form-actions {
+        padding-top: 10px;
+        margin-top: 4px;
+        gap: 8px;
+        flex-direction: row;
+    }
+
+    #edit-pm-modal .edit-pm-form-actions .btn {
+        height: 44px;
+        min-height: 44px;
+        font-size: 13.5px;
+        border-radius: 10px;
+    }
+
+    #edit-pm-modal .edit-pm-form-actions .btn-ghost {
+        flex: 1;
+        width: auto;
+    }
+
+    #edit-pm-modal .edit-pm-form-actions .btn-primary {
+        flex: 1.6;
+        width: auto;
+    }
+}
+
 /* ═══════════════════════════════════════════════════════════
    Modern Sky Blue File Upload & Dropzone Styles
    ═══════════════════════════════════════════════════════════ */
