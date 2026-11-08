@@ -1,9 +1,11 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover, interactive-widget=resizes-content">
     <meta name="theme-color" content="#0284c7">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,11 +13,13 @@
     <title>{% block title %}MoonVault{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{% static 'core/css/styles.css' %}?v=12.0">
     <script src="https://unpkg.com/lucide@latest"></script>
     {% block extra_css %}{% endblock %}
 </head>
+
 <body class="{% block body_class %}{% endblock %}" data-vapid-key="{{ vapid_public_key }}">
     {% if is_authenticated %}
     <div class="app-layout">
@@ -24,43 +28,50 @@
             <div class="top-navbar-inner">
                 <!-- Left: Mobile Menu Toggle & Brand Logo -->
                 <div class="top-navbar-left">
-                    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu" title="Open navigation menu">
+                    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu"
+                        title="Open navigation menu">
                         <i data-lucide="menu"></i>
                     </button>
                     <a href="{% url 'home' %}" class="top-navbar-brand">
                         <i data-lucide="shield" class="brand-shield-icon"></i>
-                        <span class="brand-name">MoonVault <span class="brand-tag">FC</span></span>
+                        <span class="brand-name">MoonVault </span>
                     </a>
                 </div>
 
                 <!-- Center: Desktop Navigation Links -->
                 <nav class="top-navbar-links" aria-label="Primary Navigation">
-                    <a href="{% url 'home' %}" class="top-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <a href="{% url 'home' %}"
+                        class="top-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                         <i data-lucide="home"></i>
                         <span>Home</span>
                     </a>
                     {% if is_admin %}
-                    <a href="{% url 'players_list' %}" class="top-nav-item {% if 'player' in request.resolver_match.url_name and request.resolver_match.url_name != 'home' %}active{% endif %}">
+                    <a href="{% url 'players_list' %}"
+                        class="top-nav-item {% if 'player' in request.resolver_match.url_name and request.resolver_match.url_name != 'home' %}active{% endif %}">
                         <i data-lucide="users"></i>
                         <span>Players</span>
                     </a>
                     {% endif %}
-                    <a href="{% url 'announcements' %}" class="top-nav-item {% if 'announcement' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'announcements' %}"
+                        class="top-nav-item {% if 'announcement' in request.resolver_match.url_name %}active{% endif %}">
                         <i data-lucide="megaphone"></i>
                         <span>Announcements</span>
                     </a>
-                    <a href="{% url 'chat' %}" class="top-nav-item {% if request.resolver_match.url_name == 'chat' %}active{% endif %}">
+                    <a href="{% url 'chat' %}"
+                        class="top-nav-item {% if request.resolver_match.url_name == 'chat' %}active{% endif %}">
                         <i data-lucide="message-circle"></i>
                         <span>Chat</span>
                         {% if unread_message_count %}
                         <span class="nav-badge">{{ unread_message_count }}</span>
                         {% endif %}
                     </a>
-                    <a href="{% url 'tags' %}" class="top-nav-item {% if 'tag' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'tags' %}"
+                        class="top-nav-item {% if 'tag' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name %}active{% endif %}">
                         <i data-lucide="qr-code"></i>
                         <span>Payment Methods</span>
                     </a>
-                    <a href="{% url 'support' %}" class="top-nav-item {% if 'support' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'support' %}"
+                        class="top-nav-item {% if 'support' in request.resolver_match.url_name %}active{% endif %}">
                         <i data-lucide="headphones"></i>
                         <span>Support</span>
                     </a>
@@ -69,7 +80,8 @@
                 <!-- Right: Notifications, User Pill & Logout -->
                 <div class="top-navbar-right">
                     <div class="topbar-notification-wrap" id="topbar-notif-wrap">
-                        <button type="button" class="topbar-bell-btn" id="topbar-notification-toggle" title="Notifications" aria-label="Notifications" aria-expanded="false">
+                        <button type="button" class="topbar-bell-btn" id="topbar-notification-toggle"
+                            title="Notifications" aria-label="Notifications" aria-expanded="false">
                             <i data-lucide="bell"></i>
                             <span class="bell-dot" id="bell-dot"></span>
                         </button>
@@ -79,7 +91,8 @@
                                     <i data-lucide="bell-ring" style="width:16px;height:16px;"></i>
                                     <span>Notifications</span>
                                 </div>
-                                <button type="button" class="notif-push-toggle-btn" id="notif-push-toggle-btn" title="Toggle phone notifications">
+                                <button type="button" class="notif-push-toggle-btn" id="notif-push-toggle-btn"
+                                    title="Toggle phone notifications">
                                     <span class="notif-toggle-dot" id="notif-toggle-dot"></span>
                                     <span class="notif-toggle-text" id="notif-toggle-text">Phone Alerts: Off</span>
                                 </button>
@@ -144,32 +157,38 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="{% url 'home' %}" class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <a href="{% url 'home' %}"
+                    class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                     <i data-lucide="home"></i>
                     <span>Home</span>
                 </a>
                 {% if is_admin %}
-                <a href="{% url 'players_list' %}" class="sidebar-link {% if 'player' in request.resolver_match.url_name and request.resolver_match.url_name != 'home' %}active{% endif %}">
+                <a href="{% url 'players_list' %}"
+                    class="sidebar-link {% if 'player' in request.resolver_match.url_name and request.resolver_match.url_name != 'home' %}active{% endif %}">
                     <i data-lucide="users"></i>
                     <span>Players</span>
                 </a>
                 {% endif %}
-                <a href="{% url 'announcements' %}" class="sidebar-link {% if 'announcement' in request.resolver_match.url_name %}active{% endif %}">
+                <a href="{% url 'announcements' %}"
+                    class="sidebar-link {% if 'announcement' in request.resolver_match.url_name %}active{% endif %}">
                     <i data-lucide="megaphone"></i>
                     <span>Announcements</span>
                 </a>
-                <a href="{% url 'chat' %}" class="sidebar-link {% if request.resolver_match.url_name == 'chat' %}active{% endif %}">
+                <a href="{% url 'chat' %}"
+                    class="sidebar-link {% if request.resolver_match.url_name == 'chat' %}active{% endif %}">
                     <i data-lucide="message-circle"></i>
                     <span>Chat</span>
                     {% if unread_message_count %}
                     <span class="badge">{{ unread_message_count }}</span>
                     {% endif %}
                 </a>
-                <a href="{% url 'tags' %}" class="sidebar-link {% if 'tag' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name %}active{% endif %}">
+                <a href="{% url 'tags' %}"
+                    class="sidebar-link {% if 'tag' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name %}active{% endif %}">
                     <i data-lucide="qr-code"></i>
                     <span>Payment Methods</span>
                 </a>
-                <a href="{% url 'support' %}" class="sidebar-link {% if 'support' in request.resolver_match.url_name %}active{% endif %}">
+                <a href="{% url 'support' %}"
+                    class="sidebar-link {% if 'support' in request.resolver_match.url_name %}active{% endif %}">
                     <i data-lucide="headphones"></i>
                     <span>Support</span>
                 </a>
@@ -209,15 +228,18 @@
 
         <!-- Mobile Bottom Tab Bar (App-like Navigation for Phones) -->
         <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile Bottom Navigation">
-            <a href="{% url 'home' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <a href="{% url 'home' %}"
+                class="bottom-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                 <i data-lucide="home"></i>
                 <span>Home</span>
             </a>
-            <a href="{% url 'announcements' %}" class="bottom-nav-item {% if 'announcement' in request.resolver_match.url_name %}active{% endif %}">
+            <a href="{% url 'announcements' %}"
+                class="bottom-nav-item {% if 'announcement' in request.resolver_match.url_name %}active{% endif %}">
                 <i data-lucide="megaphone"></i>
                 <span>Updates</span>
             </a>
-            <a href="{% url 'chat' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'chat' %}active{% endif %}">
+            <a href="{% url 'chat' %}"
+                class="bottom-nav-item {% if request.resolver_match.url_name == 'chat' %}active{% endif %}">
                 <div class="bottom-nav-icon-wrap">
                     <i data-lucide="message-circle"></i>
                     {% if unread_message_count %}
@@ -226,7 +248,8 @@
                 </div>
                 <span>Chat</span>
             </a>
-            <a href="{% url 'tags' %}" class="bottom-nav-item {% if 'tag' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name %}active{% endif %}">
+            <a href="{% url 'tags' %}"
+                class="bottom-nav-item {% if 'tag' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name %}active{% endif %}">
                 <i data-lucide="qr-code"></i>
                 <span>Pay</span>
             </a>
@@ -237,7 +260,7 @@
         </nav>
     </div>
     {% else %}
-        {% block public_content %}{% endblock %}
+    {% block public_content %}{% endblock %}
     {% endif %}
 
     <script src="{% static 'core/js/main.js' %}?v=6.0"></script>
@@ -247,5 +270,5 @@
         if (typeof lucide !== 'undefined') { lucide.createIcons(); }
     </script>
 </body>
-</html>
 
+</html>
