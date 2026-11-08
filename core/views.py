@@ -373,100 +373,134 @@ def player_toggle_status(request, player_id):
 
 @login_required_custom
 def chat(request):
-    db = get_db()
-    role = request.session.get('role')
-    user_id = request.session.get('user_id')
+    try:
+        db = get_db()
+        role = request.session.get('role')
+        user_id = request.session.get('user_id')
 
-    if role == 'admin':
-        # Get all players for sidebar
-        players = list(db.players.find({}, {
-            'full_name': 1, 'username': 1, 'profile_picture': 1, 'status': 1, 'player_id': 1
-        }).sort('full_name', 1))
-        for p in players:
-            normalize_doc(p)
-            # Unread count for each player
-            p['unread'] = db.messages.count_documents({
-                'sender_id': str(p['id']),
-                'receiver_id': user_id,
-                'is_read': False
-            })
-            # Last message
-            last_msg = db.messages.find_one(
-                {'$or': [
-                    {'sender_id': str(p['id']), 'receiver_id': user_id},
-                    {'sender_id': user_id, 'receiver_id': str(p['id'])}
-                ]},
-                sort=[('timestamp', -1)]
-            )
-            if last_msg:
-                if last_msg.get('message'):
-                    p['last_message'] = last_msg['message'][:35]
-                elif last_msg.get('image'):
-                    p['last_message'] = '📷 Photo'
+        if role == 'admin':
+            # Get all players for sidebar
+            players = list(db.players.find({}, {
+                'full_name': 1, 'username': 1, 'profile_picture': 1, 'status': 1, 'player_id': 1
+            }).sort('full_name', 1))
+            for p in players:
+                normalize_doc(p)
+                # Unread count for each player
+                p['unread'] = db.messages.count_documents({
+                    'sender_id': str(p['id']),
+                    'receiver_id': user_id,
+                    'is_read': False
+                })
+                # Last message
+                last_msg = db.messages.find_one(
+                    {'$or': [
+                        {'sender_id': str(p['id']), 'receiver_id': user_id},
+                        {'sender_id': user_id, 'receiver_id': str(p['id'])}
+                    ]},
+                    sort=[('timestamp', -1)]
+                )
+                if last_msg:
+                    if last_msg.get('message'):
+                        p['last_message'] = last_msg['message'][:35]
+                    elif last_msg.get('image') or last_msg.get('image_data'):
+                        p['last_message'] = '📷 Photo'
+                    else:
+                        p['last_message'] = ''
+                    p['last_time'] = last_msg.get('timestamp')
                 else:
                     p['last_message'] = ''
-                p['last_time'] = last_msg.get('timestamp', '')
-            else:
-                p['last_message'] = ''
-                p['last_time'] = ''
+                    p['last_time'] = None
 
-        # Sort by last message time (most recent first)
-        players.sort(key=lambda x: x.get('last_time', ''), reverse=True)
+            # Sort by last message time (most recent first, safely handling datetimes vs empty)
+            def get_player_sort_time(player_item):
+                t = player_item.get('last_time')
+                if isinstance(t, datetime):
+                    return t
+                if isinstance(t, str) and t.strip():
+                    try:
+                        return datetime.fromisoformat(t.strip())
+                    except Exception:
+                        pass
+                return datetime.min
 
-        active_player_id = request.GET.get('player')
-        active_player = None
-        chat_messages = []
+            players.sort(key=get_player_sort_time, reverse=True)
 
-        if active_player_id:
-            active_player = db.players.find_one({'_id': ObjectId(active_player_id)})
-            if active_player:
-                normalize_doc(active_player)
+            active_player_id = request.GET.get('player')
+            active_player = None
+            chat_messages = []
+
+            if active_player_id:
+                try:
+                    if ObjectId.is_valid(active_player_id):
+                        active_player = db.players.find_one({'_id': ObjectId(active_player_id)})
+                    if not active_player:
+                        active_player = db.players.find_one({
+                            '$or': [
+                                {'player_id': active_player_id},
+                                {'username': active_player_id}
+                            ]
+                        })
+                except Exception:
+                    active_player = None
+
+                if active_player:
+                    normalize_doc(active_player)
+                    target_pid = str(active_player.get('id', active_player.get('_id', active_player_id)))
+                    chat_messages = list(db.messages.find({
+                        '$or': [
+                            {'sender_id': user_id, 'receiver_id': target_pid},
+                            {'sender_id': target_pid, 'receiver_id': user_id}
+                        ]
+                    }).sort('timestamp', 1))
+                    for msg in chat_messages:
+                        normalize_doc(msg)
+                        msg['image_url'] = normalize_message_image_url(msg.get('image'), msg.get('image_data'))
+                    # Mark as read
+                    db.messages.update_many(
+                        {'sender_id': target_pid, 'receiver_id': user_id, 'is_read': False},
+                        {'$set': {'is_read': True}}
+                    )
+
+            return render(request, 'core/chat.html', {
+                'players': players,
+                'active_player': active_player,
+                'chat_messages': chat_messages,
+            })
+
+        else:
+            # Player view - chat with admin only
+            admin = db.admin.find_one()
+            admin_id = str(admin['_id']) if admin else None
+
+            chat_messages = []
+            if admin_id:
                 chat_messages = list(db.messages.find({
                     '$or': [
-                        {'sender_id': user_id, 'receiver_id': active_player_id},
-                        {'sender_id': active_player_id, 'receiver_id': user_id}
+                        {'sender_id': user_id, 'receiver_id': admin_id},
+                        {'sender_id': admin_id, 'receiver_id': user_id}
                     ]
                 }).sort('timestamp', 1))
                 for msg in chat_messages:
                     normalize_doc(msg)
                     msg['image_url'] = normalize_message_image_url(msg.get('image'), msg.get('image_data'))
-                # Mark as read
+                # Mark admin messages as read
                 db.messages.update_many(
-                    {'sender_id': active_player_id, 'receiver_id': user_id, 'is_read': False},
+                    {'sender_id': admin_id, 'receiver_id': user_id, 'is_read': False},
                     {'$set': {'is_read': True}}
                 )
 
+            return render(request, 'core/chat.html', {
+                'admin_id': admin_id,
+                'chat_messages': chat_messages,
+            })
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).exception("Error in chat view: %s", exc)
         return render(request, 'core/chat.html', {
-            'players': players,
-            'active_player': active_player,
-            'chat_messages': chat_messages,
-        })
-
-    else:
-        # Player view - chat with admin only
-        admin = db.admin.find_one()
-        admin_id = str(admin['_id']) if admin else None
-
-        chat_messages = []
-        if admin_id:
-            chat_messages = list(db.messages.find({
-                '$or': [
-                    {'sender_id': user_id, 'receiver_id': admin_id},
-                    {'sender_id': admin_id, 'receiver_id': user_id}
-                ]
-            }).sort('timestamp', 1))
-            for msg in chat_messages:
-                normalize_doc(msg)
-                msg['image_url'] = normalize_message_image_url(msg.get('image'), msg.get('image_data'))
-            # Mark admin messages as read
-            db.messages.update_many(
-                {'sender_id': admin_id, 'receiver_id': user_id, 'is_read': False},
-                {'$set': {'is_read': True}}
-            )
-
-        return render(request, 'core/chat.html', {
-            'admin_id': admin_id,
-            'chat_messages': chat_messages,
+            'players': [],
+            'active_player': None,
+            'chat_messages': [],
+            'admin_id': None,
         })
 
 
