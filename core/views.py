@@ -72,6 +72,8 @@ def login_view(request):
                 request.session['role'] = 'admin'
                 request.session['username'] = username
                 request.session['full_name'] = 'Administrator'
+                request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+                request.session.modified = True
                 return redirect('home')
 
             # Check players by username, player_id (e.g. PLR-0001), or full_name
@@ -90,6 +92,8 @@ def login_view(request):
                 request.session['role'] = 'player'
                 request.session['username'] = player.get('username', username)
                 request.session['full_name'] = player.get('full_name', username)
+                request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+                request.session.modified = True
                 return redirect('home')
 
             messages.error(request, 'Invalid username or password.')

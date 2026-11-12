@@ -73,10 +73,16 @@ ASGI_APPLICATION = 'football_manager.asgi.application'
 # No SQL database needed - using MongoDB directly
 DATABASES = {}
 
-# Session config - signed cookies (no DB needed)
+# Session config - persistent signed cookies (stays logged in until explicit logout)
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_COOKIE_AGE = 315360000  # 10 years (stay logged in until user clicks logout)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session active after browser/tab is closed
+SESSION_SAVE_EVERY_REQUEST = True  # Continuously refresh cookie expiration on each request
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Proxy SSL header (required for reverse proxies like Render HTTPS)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # MongoDB settings
 MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
