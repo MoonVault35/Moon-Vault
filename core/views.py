@@ -13,6 +13,7 @@ from .db import get_db, generate_player_id
 from .decorators import login_required_custom, admin_required
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from .media_storage import save_media_file, delete_media_file
 
 
 # ─── Public Views ──────────────────────────────────────────
@@ -245,15 +246,11 @@ def player_add(request):
         profile_picture = ''
         if 'profile_picture' in request.FILES:
             pic = request.FILES['profile_picture']
-            upload_dir = os.path.join(settings.MEDIA_ROOT, 'profile_pics')
-            os.makedirs(upload_dir, exist_ok=True)
-            ext = os.path.splitext(pic.name)[1]
+            ext = os.path.splitext(pic.name)[1].lower() or '.jpg'
             filename = f"{player_id}{ext}"
-            filepath = os.path.join(upload_dir, filename)
-            with open(filepath, 'wb+') as f:
-                for chunk in pic.chunks():
-                    f.write(chunk)
-            profile_picture = f"profile_pics/{filename}"
+            rel_path = f"profile_pics/{filename}"
+            save_media_file(rel_path, pic.read(), pic.content_type)
+            profile_picture = rel_path
 
         player_doc = {
             'player_id': player_id,
@@ -308,15 +305,11 @@ def player_edit(request, player_id):
         # Handle profile picture
         if 'profile_picture' in request.FILES:
             pic = request.FILES['profile_picture']
-            upload_dir = os.path.join(settings.MEDIA_ROOT, 'profile_pics')
-            os.makedirs(upload_dir, exist_ok=True)
-            ext = os.path.splitext(pic.name)[1]
+            ext = os.path.splitext(pic.name)[1].lower() or '.jpg'
             filename = f"{player.get('player_id', player_id)}{ext}"
-            filepath = os.path.join(upload_dir, filename)
-            with open(filepath, 'wb+') as f:
-                for chunk in pic.chunks():
-                    f.write(chunk)
-            update_data['profile_picture'] = f"profile_pics/{filename}"
+            rel_path = f"profile_pics/{filename}"
+            save_media_file(rel_path, pic.read(), pic.content_type)
+            update_data['profile_picture'] = rel_path
 
         db.players.update_one({'_id': ObjectId(player_id)}, {'$set': update_data})
         messages.success(request, f'Player "{full_name}" updated successfully!')
@@ -344,9 +337,7 @@ def player_delete(request, player_id):
         })
         # Delete profile picture
         if player.get('profile_picture'):
-            pic_path = os.path.join(settings.MEDIA_ROOT, player['profile_picture'])
-            if os.path.exists(pic_path):
-                os.remove(pic_path)
+            delete_media_file(player['profile_picture'])
         db.players.delete_one({'_id': ObjectId(player_id)})
         messages.success(request, f'Player "{player.get("full_name")}" deleted.')
     else:
@@ -582,44 +573,11 @@ def chat_send(request):
     data_url = ''
     if has_image:
         pic = request.FILES['image']
-        raw_bytes = pic.read()
         ext = os.path.splitext(pic.name)[1].lower() or '.jpg'
-        content_type = pic.content_type or 'image/jpeg'
-
-        # Optimize image with Pillow for fast mobile rendering & storage efficiency
-        try:
-            import io
-            from PIL import Image, ImageOps
-            with Image.open(io.BytesIO(raw_bytes)) as pil_img:
-                pil_img = ImageOps.exif_transpose(pil_img)
-                if pil_img.mode in ('RGBA', 'LA', 'P'):
-                    pil_img = pil_img.convert('RGB')
-                pil_img.thumbnail((1280, 1280), Image.Resampling.LANCZOS)
-                buf = io.BytesIO()
-                pil_img.save(buf, format='JPEG', quality=82, optimize=True)
-                optimized_bytes = buf.getvalue()
-                content_type = 'image/jpeg'
-                ext = '.jpg'
-        except Exception:
-            optimized_bytes = raw_bytes
-
-        # Persistent Data URL for immediate inline rendering
-        import base64
-        b64_str = base64.b64encode(optimized_bytes).decode('utf-8')
-        data_url = f"data:{content_type};base64,{b64_str}"
-
-        # Also write to local disk
-        upload_dir = os.path.join(settings.MEDIA_ROOT, 'chat_images')
-        os.makedirs(upload_dir, exist_ok=True)
         timestamp_str = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
         filename = f"chat_{timestamp_str}{ext}"
-        filepath = os.path.join(upload_dir, filename)
-        try:
-            with open(filepath, 'wb+') as dest:
-                dest.write(optimized_bytes)
-        except Exception:
-            pass
-        image_path = f"chat_images/{filename}"
+        rel_path = f"chat_images/{filename}"
+        image_path, data_url = save_media_file(rel_path, pic.read(), pic.content_type)
 
     now = datetime.utcnow()
     msg_doc = {
@@ -816,17 +774,13 @@ def payment_method_add(request):
         qr_image = ''
         if 'qr_image' in request.FILES:
             pic = request.FILES['qr_image']
-            upload_dir = os.path.join(settings.MEDIA_ROOT, 'qr_codes')
-            os.makedirs(upload_dir, exist_ok=True)
-            ext = os.path.splitext(pic.name)[1]
-            safe_name = "".join(c for c in method_name if c.isalnum() or c in ('-', '_')).lower()
+            ext = os.path.splitext(pic.name)[1].lower() or '.png'
+            safe_name = "".join(c for c in method_name if c.isalnum() or c in ('-', '_')).lower() or 'qr'
             timestamp_str = datetime.utcnow().strftime('%Y%m%d%H%M%S')
             filename = f"{safe_name}_{timestamp_str}{ext}"
-            filepath = os.path.join(upload_dir, filename)
-            with open(filepath, 'wb+') as f:
-                for chunk in pic.chunks():
-                    f.write(chunk)
-            qr_image = f"qr_codes/{filename}"
+            rel_path = f"qr_codes/{filename}"
+            save_media_file(rel_path, pic.read(), pic.content_type)
+            qr_image = rel_path
 
         db.payment_methods.insert_one({
             'method_name': method_name,
@@ -869,17 +823,15 @@ def payment_method_edit(request, method_id):
 
         if 'qr_image' in request.FILES:
             pic = request.FILES['qr_image']
-            upload_dir = os.path.join(settings.MEDIA_ROOT, 'qr_codes')
-            os.makedirs(upload_dir, exist_ok=True)
-            ext = os.path.splitext(pic.name)[1]
-            safe_name = "".join(c for c in method_name if c.isalnum() or c in ('-', '_')).lower()
+            ext = os.path.splitext(pic.name)[1].lower() or '.png'
+            safe_name = "".join(c for c in method_name if c.isalnum() or c in ('-', '_')).lower() or 'qr'
             timestamp_str = datetime.utcnow().strftime('%Y%m%d%H%M%S')
             filename = f"{safe_name}_{timestamp_str}{ext}"
-            filepath = os.path.join(upload_dir, filename)
-            with open(filepath, 'wb+') as f:
-                for chunk in pic.chunks():
-                    f.write(chunk)
-            update_data['qr_image'] = f"qr_codes/{filename}"
+            rel_path = f"qr_codes/{filename}"
+            save_media_file(rel_path, pic.read(), pic.content_type)
+            if method.get('qr_image') and method['qr_image'] != rel_path:
+                delete_media_file(method['qr_image'])
+            update_data['qr_image'] = rel_path
 
         db.payment_methods.update_one({'_id': ObjectId(method_id)}, {'$set': update_data})
         messages.success(request, f'Payment method "{method_name}" updated successfully!')
@@ -895,12 +847,7 @@ def payment_method_delete(request, method_id):
     method = db.payment_methods.find_one({'_id': ObjectId(method_id)})
     if method:
         if method.get('qr_image'):
-            pic_path = os.path.join(settings.MEDIA_ROOT, method['qr_image'])
-            if os.path.exists(pic_path):
-                try:
-                    os.remove(pic_path)
-                except Exception:
-                    pass
+            delete_media_file(method['qr_image'])
         db.payment_methods.delete_one({'_id': ObjectId(method_id)})
         messages.success(request, f'Payment method "{method.get("method_name")}" deleted.')
     else:
@@ -978,17 +925,13 @@ def announcement_add(request):
     image_path = ''
     if 'image' in request.FILES:
         pic = request.FILES['image']
-        upload_dir = os.path.join(settings.MEDIA_ROOT, 'announcements')
-        os.makedirs(upload_dir, exist_ok=True)
-        ext = os.path.splitext(pic.name)[1].lower()
+        ext = os.path.splitext(pic.name)[1].lower() or '.jpg'
         safe_title = "".join(c for c in title[:15] if c.isalnum() or c in ('-', '_')).lower() or 'ann'
         timestamp_str = datetime.utcnow().strftime('%Y%m%d%H%M%S')
         filename = f"{safe_title}_{timestamp_str}{ext}"
-        filepath = os.path.join(upload_dir, filename)
-        with open(filepath, 'wb+') as f:
-            for chunk in pic.chunks():
-                f.write(chunk)
-        image_path = f"announcements/{filename}"
+        rel_path = f"announcements/{filename}"
+        save_media_file(rel_path, pic.read(), pic.content_type)
+        image_path = rel_path
 
     db.announcements.insert_one({
         'title': title,
@@ -1040,38 +983,24 @@ def announcement_edit(request, announcement_id):
         # Check for new image
         if 'image' in request.FILES:
             pic = request.FILES['image']
-            upload_dir = os.path.join(settings.MEDIA_ROOT, 'announcements')
-            os.makedirs(upload_dir, exist_ok=True)
-            ext = os.path.splitext(pic.name)[1].lower()
+            ext = os.path.splitext(pic.name)[1].lower() or '.jpg'
             safe_title = "".join(c for c in title[:15] if c.isalnum() or c in ('-', '_')).lower() or 'ann'
             timestamp_str = datetime.utcnow().strftime('%Y%m%d%H%M%S')
             filename = f"{safe_title}_{timestamp_str}{ext}"
-            filepath = os.path.join(upload_dir, filename)
-            with open(filepath, 'wb+') as f:
-                for chunk in pic.chunks():
-                    f.write(chunk)
-            update_data['image'] = f"announcements/{filename}"
+            rel_path = f"announcements/{filename}"
+            save_media_file(rel_path, pic.read(), pic.content_type)
+            update_data['image'] = rel_path
 
             # Delete old image if existed
             existing = db.announcements.find_one({'_id': ObjectId(announcement_id)})
-            if existing and existing.get('image'):
-                old_path = os.path.join(settings.MEDIA_ROOT, existing['image'])
-                if os.path.exists(old_path):
-                    try:
-                        os.remove(old_path)
-                    except Exception:
-                        pass
+            if existing and existing.get('image') and existing['image'] != rel_path:
+                delete_media_file(existing['image'])
 
         # Optional: remove image if requested
         if request.POST.get('remove_image') == '1':
             existing = db.announcements.find_one({'_id': ObjectId(announcement_id)})
             if existing and existing.get('image'):
-                old_path = os.path.join(settings.MEDIA_ROOT, existing['image'])
-                if os.path.exists(old_path):
-                    try:
-                        os.remove(old_path)
-                    except Exception:
-                        pass
+                delete_media_file(existing['image'])
             update_data['image'] = ''
 
         result = db.announcements.update_one(
@@ -1093,15 +1022,10 @@ def announcement_edit(request, announcement_id):
 def announcement_delete(request, announcement_id):
     db = get_db()
     try:
-        # Clean up image from disk
+        # Clean up image from storage
         ann = db.announcements.find_one({'_id': ObjectId(announcement_id)})
         if ann and ann.get('image'):
-            img_path = os.path.join(settings.MEDIA_ROOT, ann['image'])
-            if os.path.exists(img_path):
-                try:
-                    os.remove(img_path)
-                except Exception:
-                    pass
+            delete_media_file(ann['image'])
 
         result = db.announcements.delete_one({'_id': ObjectId(announcement_id)})
         if result.deleted_count:
